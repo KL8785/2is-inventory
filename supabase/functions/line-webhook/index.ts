@@ -75,22 +75,26 @@ async function handleText(text: string): Promise<string> {
   const platform = meta.platform || "其他";
   const date = meta.date || new Date().toISOString().slice(0, 10);
 
-  // 撈商品、成本、平台費用
-  const ids = items.map((i) => i.id);
-  const [{ data: prods }, { data: costs }, { data: fees }, { data: invs }] = await Promise.all([
-    sb.from("products").select("id,name").in("id", ids),
-    sb.from("costs").select("product_id,default_price").in("product_id", ids),
+  // 撈商品（全量，不分大小寫比對）+ 平台費用
+  const [{ data: allProds }, { data: fees }] = await Promise.all([
+    sb.from("products").select("id,name"),
     sb.from("platform_fees").select("*").eq("platform", platform).maybeSingle(),
-    sb.from("inventory").select("*").in("product_id", ids),
   ]);
-  const prodMap = new Map((prods ?? []).map((p) => [p.id.toLowerCase(), p]));
-  const costMap = new Map((costs ?? []).map((c) => [c.product_id.toLowerCase(), c.default_price]));
-  const invMap = new Map((invs ?? []).map((v) => [v.product_id.toLowerCase(), v]));
+  const prodMap = new Map((allProds ?? []).map((p) => [p.id.toLowerCase(), p]));
 
   const notFound = items.filter((i) => !prodMap.has(i.id.toLowerCase()));
   if (notFound.length) {
     return `⚠ 查無商品編號：${notFound.map((i) => i.id).join("、")}\n請確認編號後重貼。`;
   }
+
+  // 用真正的商品編號撈成本、庫存
+  const realIds = items.map((i) => prodMap.get(i.id.toLowerCase())!.id);
+  const [{ data: costs }, { data: invs }] = await Promise.all([
+    sb.from("costs").select("product_id,default_price").in("product_id", realIds),
+    sb.from("inventory").select("*").in("product_id", realIds),
+  ]);
+  const costMap = new Map((costs ?? []).map((c) => [c.product_id.toLowerCase(), c.default_price]));
+  const invMap = new Map((invs ?? []).map((v) => [v.product_id.toLowerCase(), v]));
 
   // 組明細
   const orderItems = items.map((i) => {
