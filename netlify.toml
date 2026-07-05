@@ -1,0 +1,10 @@
+# 純靜態網站，無建置步驟。Netlify 直接發布專案根目錄。
+[build]
+  publish = "."
+  command = ""
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
