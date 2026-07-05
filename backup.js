@@ -73,7 +73,8 @@ async function main() {
   const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
   const out = { meta: { savedAt: now.toISOString(), source: URL, rows: total }, tables };
 
-  const dir = join(HERE, "backups");
+  // 備份存放於程式資料夾的上一層 backups/（2is_InventorySystem/backups）
+  const dir = join(HERE, "..", "backups");
   mkdirSync(dir, { recursive: true });
   const file = join(dir, `2is_inventory_backup_${stamp}.json`);
   writeFileSync(file, JSON.stringify(out, null, 1));

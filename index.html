@@ -3247,8 +3247,32 @@ async function _start(){
     _sbBanner('載入資料中…', true);
     await loadAll();
     init();
+    _mountBackupBtn();
     _sbBanner('✓ 已連線雲端資料庫', true);
   }catch(e){ console.error(e); _sbBanner('⚠ 載入失敗：'+(e.message||e), false); }
+}
+// ── 手動備份：下載目前全部資料為 JSON ──
+function _mountBackupBtn(){
+  if(document.getElementById('_backupBtn')) return;
+  const b=document.createElement('button'); b.id='_backupBtn'; b.textContent='⬇ 備份'; b.title='下載目前全部資料備份 (JSON)';
+  b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9000;padding:10px 16px;background:#2E5AA7;color:#fff;border:0;border-radius:12px;font:600 13px Poppins,sans-serif;box-shadow:0 4px 14px rgba(46,90,167,.3);cursor:pointer';
+  b.onclick=manualBackup; document.body.appendChild(b);
+}
+async function manualBackup(){
+  const btn=document.getElementById('_backupBtn'); const old=btn?btn.textContent:'';
+  try{
+    if(btn){btn.textContent='備份中…';btn.disabled=true;}
+    const tables=['products','inventory','orders','order_items','restocks','returns','purchase_orders','costs','platforms','platform_fees','listings','shipping_methods','packaging_defaults','finance_expenses','app_settings'];
+    const out={meta:{savedAt:new Date().toISOString(),source:SUPABASE_URL,by:'manual'},tables:{}}; let total=0;
+    for(const t of tables){ const {data,error}=await sb.from(t).select('*'); if(error) throw error; out.tables[t]=data||[]; total+=(data||[]).length; }
+    const blob=new Blob([JSON.stringify(out,null,1)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    const n=new Date(), p=x=>String(x).padStart(2,'0');
+    a.download=`2is_inventory_backup_${n.getFullYear()}${p(n.getMonth()+1)}${p(n.getDate())}_${p(n.getHours())}${p(n.getMinutes())}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+    _sbBanner('✓ 已下載備份（'+total+' 筆，存於瀏覽器下載資料夾）', true);
+  }catch(e){ console.error(e); _sbBanner('⚠ 備份失敗：'+(e.message||e), false); }
+  finally{ if(btn){btn.textContent=old||'⬇ 備份';btn.disabled=false;} }
 }
 function _loginOverlay(){
   let el=document.createElement('div'); el.id='_loginOverlay';
