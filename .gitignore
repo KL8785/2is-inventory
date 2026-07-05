@@ -3,3 +3,5 @@ node_modules/
 *.log
 .env
 .netlify/
+backups/
+zz_Archive/
