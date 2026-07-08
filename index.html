@@ -36,6 +36,16 @@ h1,h2,h3,.disp{font-family:'Comfortaa','Huninn','Poppins','PingFang TC','Noto Sa
 .ph-left p{font-size:12px;color:var(--gray);margin-top:3px}
 /* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.dash-todo-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:18px}
+.dash-todo-row:empty{display:none}
+.todo-card{background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 2px 10px rgba(46,90,167,.05);cursor:pointer;display:flex;align-items:center;gap:14px;border-left:4px solid var(--acc);transition:transform .16s ease,box-shadow .16s ease}
+.todo-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(46,90,167,.12)}
+.todo-card .tc-ico{font-size:26px;line-height:1}
+.todo-card .tc-lbl{font-size:12px;color:var(--gray);font-weight:600}
+.todo-card .tc-val{font-size:24px;font-weight:800;line-height:1.1}
+.todo-card .tc-sub{font-size:11px;color:var(--gray);margin-top:2px}
+.todo-card.tc-zero{opacity:.55;border-left-color:var(--border);background:#F8FAFC}
+.todo-card.tc-zero .tc-val{color:var(--gray)}
 .kpi{background:#fff;border-radius:18px;padding:16px;box-shadow:0 2px 10px rgba(46,90,167,.05)}
 .kpi .lbl{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
 .kpi .val{font-size:26px;font-weight:800;margin-top:4px;line-height:1}
@@ -112,6 +122,13 @@ tr:hover td{background:#F4F8FD}
 .si{padding:7px 10px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:#EFF5FD url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%235E6B86' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 9px center;font-family:inherit;transition:border .15s;min-width:160px}
 .si:focus{border-color:var(--acc);background-color:#fff}
 .sec-title{font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px}
+/* 頁內子頁籤 */
+.subtabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid var(--border)}
+.subtab{padding:9px 18px;cursor:pointer;font-size:13px;font-weight:600;color:var(--gray);border-radius:9px 9px 0 0;border-bottom:2.5px solid transparent;margin-bottom:-2px;user-select:none;transition:all .15s}
+.subtab:hover{color:var(--dark);background:#EFF5FD}
+.subtab.active{color:var(--acc);border-bottom-color:var(--acc);background:#fff}
+.subtab-panel{display:none}
+.subtab-panel.active{display:block}
 /* Platform tag list */
 .plat-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .plat-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:#EFF5FD;border:1.5px solid var(--border);border-radius:20px;font-size:12px;font-weight:600}
@@ -254,14 +271,13 @@ tr:hover td{background:#F4F8FD}
   <div class="logo"><h1>2is</h1><p>INVENTORY SYSTEM</p></div>
   <div class="gsearch-zone"><input id="global-search" class="gsearch" type="search" placeholder="🔍 快速找商品…" onkeydown="globalSearch(event)"></div>
   <nav class="nav" id="nav">
-    <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span>儀表板</div>
+    <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span>今日總覽</div>
     <div class="nav-item" data-page="sales"><span class="nav-icon">📦</span>出貨管理</div>
-    <div class="nav-item" data-page="restocks"><span class="nav-icon">📥</span>進貨管理</div>
-        <div class="nav-item" data-page="inventory"><span class="nav-icon">🗂</span>庫存總覽</div>
-    <div class="nav-item" data-page="listing"><span class="nav-icon">🏪</span>上下架管理</div>
-    <div class="nav-item" data-page="costs"><span class="nav-icon">💰</span>商品成本</div>
-    <div class="nav-item" data-page="products"><span class="nav-icon">⚙️</span>系統設定</div>
-    <div class="nav-item" data-page="finance"><span class="nav-icon">📒</span>損益統計</div>
+    <div class="nav-item" data-page="restocks"><span class="nav-icon">📥</span>補貨</div>
+    <div class="nav-item" data-page="inventory"><span class="nav-icon">🗂</span>庫存</div>
+    <div class="nav-item" data-page="products"><span class="nav-icon">🏷</span>商品</div>
+    <div class="nav-item" data-page="finance"><span class="nav-icon">📒</span>報表損益</div>
+    <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span>設定</div>
   </nav>
   <div class="sync-zone">
     <div class="sync-lbl">☁ Google Drive 同步</div>
@@ -273,10 +289,12 @@ tr:hover td{background:#F4F8FD}
 
 <!-- DASHBOARD -->
 <section id="page-dashboard" class="page active">
-  <div class="ph"><div class="ph-left"><h2>📊 儀表板</h2><p id="dash-date"></p></div>
+  <div class="ph"><div class="ph-left"><h2>📊 今日總覽</h2><p id="dash-date"></p></div>
   </div>
   <div class="dash-month-bar"><label>顯示月份</label><input type="month" id="dash-month" onchange="renderDash()"><button class="btn btn-s btn-sm" onclick="document.getElementById('dash-month').value='';renderDash()">顯示全部</button></div>
   <div id="dash-alert"></div>
+  <!-- P2 待辦行動卡 -->
+  <div class="dash-todo-row" id="dash-todo-row"></div>
   <div class="kpi-grid" id="kpi-grid"></div>
   <div class="chart-row">
     <div class="chart-card"><h3>各平台出貨佔比</h3><div class="chart-wrap"><canvas id="c-platform"></canvas></div></div>
@@ -293,7 +311,7 @@ tr:hover td{background:#F4F8FD}
     <div class="card" style="margin:0">
       <div class="card-hdr"><h3>🚨 補貨警示（庫存 ≤ 0）</h3></div>
       <div class="tscroll" style="max-height:240px"><table>
-        <thead><tr><th>商品</th><th>庫存</th><th>待整理</th><th>安全庫存</th><th>狀態</th></tr></thead>
+        <thead><tr><th>商品</th><th>庫存</th><th>待整理</th><th>安全庫存</th><th>狀態</th><th>操作</th></tr></thead>
         <tbody id="alert-tbody"></tbody>
       </table></div>
     </div>
@@ -320,59 +338,75 @@ tr:hover td{background:#F4F8FD}
     <div class="fg"><label>開始日期</label><input type="date" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px" id="sf-from" onchange="renderSalesPage()"></div>
     <div class="fg"><label>結束日期</label><input type="date" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px" id="sf-to" onchange="renderSalesPage()"></div>
     <div class="fg"><label>平台</label><select id="sf-plat" onchange="renderSalesPage()"></select></div>
-    <div class="fg"><label>退貨類型</label><select id="sf-rtcond" onchange="renderReturns()">
-      <option value="">全部</option><option value="good">良品回收</option><option value="ng">NG品</option>
+    <div class="fg"><label>出貨狀態</label><select id="sf-ostatus" onchange="renderOrders()">
+      <option value="">全部</option><option value="pending">⏳ 待出貨</option><option value="shipped">✅ 已出貨</option>
     </select></div>
     <button class="btn btn-s btn-sm" onclick="clrSalesFilter()">清除</button>
   </div>
 
-  <!-- 綜合 KPI -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:16px">
-    <div class="kpi"><div class="lbl">出貨筆數</div><div class="val" id="s-orders">—</div></div>
-    <div class="kpi"><div class="lbl">出貨件數</div><div class="val" id="s-qty">—</div></div>
-    <div class="kpi acc"><div class="lbl">銷售金額</div><div class="val" id="s-rev">—</div></div>
-    <div class="kpi dark"><div class="lbl">退貨筆數</div><div class="val" id="rt-s-count">—</div></div>
-    <div class="kpi"><div class="lbl">退貨件數</div><div class="val" id="rt-s-qty">—</div></div>
-    <div class="kpi"><div class="lbl">良品回收</div><div class="val" id="rt-s-good" style="color:var(--ok)">—</div></div>
-    <div class="kpi"><div class="lbl">NG件數</div><div class="val" id="rt-s-ng" style="color:var(--err)">—</div></div>
+  <!-- 子頁籤：出貨紀錄｜退貨紀錄 -->
+  <div class="subtabs">
+    <div class="subtab active" onclick="switchSubTab(this,'st-orders')">📦 出貨紀錄</div>
+    <div class="subtab" onclick="switchSubTab(this,'st-returns')">↩️ 退貨紀錄</div>
   </div>
 
-  <!-- 出貨記錄表 -->
-  <div class="card" style="margin-bottom:18px">
-    <div class="card-hdr">
-      <h3 id="o-count">出貨記錄</h3>
-      <button class="btn btn-s btn-sm" onclick="exportOrders()">⬇ 匯出出貨</button>
+  <!-- 出貨紀錄 -->
+  <div class="subtab-panel active" id="st-orders">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:16px">
+      <div class="kpi"><div class="lbl">出貨筆數</div><div class="val" id="s-orders">—</div></div>
+      <div class="kpi"><div class="lbl">出貨件數</div><div class="val" id="s-qty">—</div></div>
+      <div class="kpi acc"><div class="lbl">銷售金額</div><div class="val" id="s-rev">—</div></div>
+      <div class="kpi"><div class="lbl">待出貨</div><div class="val" id="s-pending" style="color:var(--warn)">—</div></div>
     </div>
-    <div class="tscroll"><table>
-      <thead><tr><th>#</th><th>日期</th><th>平台</th><th>商品</th><th>數量</th><th>售價</th><th>小計</th><th>抽成+費</th><th>實收</th><th>運送方式</th><th></th></tr></thead>
-      <tbody id="o-tbody"></tbody>
-    </table></div>
+    <div class="card">
+      <div class="card-hdr">
+        <h3 id="o-count">出貨記錄</h3>
+        <button class="btn btn-s btn-sm" onclick="exportOrders()">⬇ 匯出出貨</button>
+      </div>
+      <div class="tscroll"><table>
+        <thead><tr><th>#</th><th>日期</th><th>平台</th><th>商品</th><th>數量</th><th>售價</th><th>小計</th><th>抽成+費</th><th>實收</th><th>運送方式</th><th>狀態</th><th></th></tr></thead>
+        <tbody id="o-tbody"></tbody>
+      </table></div>
+    </div>
   </div>
 
-  <!-- 退貨記錄表 -->
-  <div class="card">
-    <div class="card-hdr">
-      <h3 id="rt-count">退貨記錄</h3>
-      <button class="btn btn-s btn-sm" onclick="exportReturns()">⬇ 匯出退貨</button>
+  <!-- 退貨紀錄 -->
+  <div class="subtab-panel" id="st-returns">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:16px">
+      <div class="kpi dark"><div class="lbl">退貨筆數</div><div class="val" id="rt-s-count">—</div></div>
+      <div class="kpi"><div class="lbl">退貨件數</div><div class="val" id="rt-s-qty">—</div></div>
+      <div class="kpi"><div class="lbl">良品回收</div><div class="val" id="rt-s-good" style="color:var(--ok)">—</div></div>
+      <div class="kpi"><div class="lbl">NG件數</div><div class="val" id="rt-s-ng" style="color:var(--err)">—</div></div>
     </div>
-    <div class="tscroll"><table>
-      <thead><tr><th>#</th><th>日期</th><th>平台</th><th>商品</th><th>數量</th><th>退貨類型</th><th>退款金額</th><th>退貨原因</th><th>操作</th></tr></thead>
-      <tbody id="rt-tbody"></tbody>
-    </table></div>
+    <div class="fbar">
+      <div class="fg"><label>退貨類型</label><select id="sf-rtcond" onchange="renderReturns()">
+        <option value="">全部</option><option value="good">良品回收</option><option value="ng">NG品</option>
+      </select></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr">
+        <h3 id="rt-count">退貨記錄</h3>
+        <button class="btn btn-s btn-sm" onclick="exportReturns()">⬇ 匯出退貨</button>
+      </div>
+      <div class="tscroll"><table>
+        <thead><tr><th>#</th><th>日期</th><th>平台</th><th>關聯單號</th><th>商品</th><th>數量</th><th>退貨類型</th><th>退款金額</th><th>退貨原因</th><th>操作</th></tr></thead>
+        <tbody id="rt-tbody"></tbody>
+      </table></div>
+    </div>
   </div>
 </section>
 
 <!-- RESTOCKS -->
 <section id="page-restocks" class="page">
   <div class="ph">
-    <div class="ph-left"><h2>📥 進貨管理</h2><p>新增進貨並指定入庫狀態，庫存對應欄位自動更新</p></div>
-    <button class="btn btn-p" onclick="openRestockNew()">＋ 新增進貨</button>
+    <div class="ph-left"><h2>📥 補貨</h2><p>一筆補貨單同筆推進：已訂貨 → 待整理 → 已入庫，庫存對應欄位自動轉移</p></div>
+    <button class="btn btn-p" onclick="openRestockNew()">＋ 新增補貨</button>
   </div>
   <div class="card">
-    <div class="card-hdr"><h3 id="r-count">進貨記錄</h3>
+    <div class="card-hdr"><h3 id="r-count">補貨記錄</h3>
       <button class="btn btn-s btn-sm" onclick="exportRestocks()">⬇ 匯出 Excel</button></div>
     <div class="tscroll"><table>
-      <thead><tr><th>#</th><th>日期</th><th>商品</th><th>數量</th><th>入庫狀態</th><th>備註</th><th></th></tr></thead>
+      <thead><tr><th>#</th><th>日期</th><th>商品</th><th>數量</th><th>單位成本</th><th>總支出</th><th>入庫狀態</th><th>備註</th><th></th></tr></thead>
       <tbody id="r-tbody"></tbody>
     </table></div>
   </div>
@@ -380,7 +414,7 @@ tr:hover td{background:#F4F8FD}
 
 <!-- INVENTORY -->
 <section id="page-inventory" class="page">
-  <div class="ph"><div class="ph-left"><h2>🗂 庫存總覽</h2><p>已訂貨 → 待整理 → 庫存（可出貨）+ NG + 報廢</p></div>
+  <div class="ph"><div class="ph-left"><h2>🗂 庫存</h2><p>已訂貨 → 待整理 → 庫存（可出貨）+ NG + 報廢</p></div>
     <button class="btn btn-s btn-sm" onclick="exportInventory()">⬇ 匯出 Excel</button></div>
   <div class="fbar">
     <div class="fg"><label>搜尋</label><input class="si" id="f-isearch" placeholder="名稱或編號…" oninput="renderInv()"></div>
@@ -405,16 +439,23 @@ tr:hover td{background:#F4F8FD}
   </div>
 </section>
 
-<!-- PRODUCTS & PLATFORM SETTINGS -->
+<!-- PRODUCTS (商品資料｜上下架矩陣) -->
 <section id="page-products" class="page">
   <div class="ph">
-    <div class="ph-left"><h2>⚙️ 系統設定</h2><p>管理商品資料、各平台售價及銷售平台清單</p></div>
+    <div class="ph-left"><h2>🏷 商品</h2><p>商品資料、成本與售價、各平台上下架狀態</p></div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-s" onclick="openPkgDefaults()">📦 包裝品預設</button>
+      <button class="btn btn-s" onclick="openCalcM()">📐 利潤計算機</button>
       <button class="btn btn-p" onclick="openNewProd()">＋ 新增商品</button>
     </div>
   </div>
 
+  <!-- 子頁籤：商品資料｜上下架矩陣 -->
+  <div class="subtabs">
+    <div class="subtab active" onclick="switchSubTab(this,'st-proddata')">📋 商品資料</div>
+    <div class="subtab" onclick="switchSubTab(this,'st-listing')">🏪 上下架矩陣</div>
+  </div>
+
+  <div class="subtab-panel active" id="st-proddata">
   <!-- Product table -->
   <div class="fbar">
     <div class="fg"><label>搜尋</label><input class="si" id="f-psearch" placeholder="名稱或編號…" oninput="renderProducts()"></div>
@@ -429,9 +470,10 @@ tr:hover td{background:#F4F8FD}
     <button class="btn btn-sm btn-s" onclick="clearProdSelection()">取消選取</button>
   </div>
   <div class="card">
-    <div class="card-hdr"><h3 id="p-count">商品</h3></div>
+    <div class="card-hdr"><h3 id="p-count">商品</h3>
+      <button class="btn btn-s btn-sm" onclick="saveAllCosts()">💾 儲存成本/售價</button></div>
     <div class="tscroll"><table>
-      <thead><tr><th style="width:32px"><input type="checkbox" id="p-check-all" onchange="toggleAllProds(this)" style="cursor:pointer"></th><th>商品編號</th><th>商品名稱</th><th>分類</th><th>預設售價</th><th>安全庫存</th><th>操作</th></tr></thead>
+      <thead><tr><th style="width:32px"><input type="checkbox" id="p-check-all" onchange="toggleAllProds(this)" style="cursor:pointer"></th><th>商品編號</th><th>商品名稱</th><th>分類</th><th>安全庫存</th><th>成本 (TWD)</th><th>預設售價</th><th>毛利率</th><th>操作</th></tr></thead>
       <tbody id="p-tbody"></tbody>
     </table></div>
   </div>
@@ -456,6 +498,38 @@ tr:hover td{background:#F4F8FD}
       <div class="uz-title">上傳修改後的 Excel</div>
       <div class="uz-sub">.xlsx / .xls 格式</div>
     </div>
+  </div>
+  </div><!-- /st-proddata -->
+
+  <!-- 上下架矩陣 -->
+  <div class="subtab-panel" id="st-listing">
+    <div class="fbar">
+      <div class="fg"><label>搜尋款式</label><input class="si" id="f-lsearch" placeholder="名稱或編號…" oninput="renderListing()"></div>
+      <div class="fg"><label>狀態篩選</label>
+        <select id="f-lstatus" onchange="renderListing()">
+          <option value="">全部</option>
+          <option>上架中</option><option>待上架</option><option>待下架</option><option>待補貨</option><option>停賣</option>
+        </select>
+      </div>
+      <button class="btn btn-s btn-sm" onclick="clrF('l')">清除</button>
+      <button class="btn btn-s btn-sm" onclick="exportListing()">⬇ 匯出 Excel</button>
+    </div>
+    <div class="card">
+      <div class="listing-grid">
+        <table class="listing-table" id="listing-table">
+          <thead id="listing-thead"></thead>
+          <tbody id="listing-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /st-listing -->
+</section>
+
+<!-- SETTINGS -->
+<section id="page-settings" class="page">
+  <div class="ph">
+    <div class="ph-left"><h2>⚙️ 設定</h2><p>平台清單、平台費用、運送方式、包裝預設與危險操作</p></div>
+    <button class="btn btn-s" onclick="openPkgDefaults()">📦 包裝品預設</button>
   </div>
 
   <!-- Platform fee settings -->
@@ -499,41 +573,11 @@ tr:hover td{background:#F4F8FD}
   </div>
 </section>
 
-<!-- LISTING MANAGEMENT -->
-<section id="page-listing" class="page">
-  <div class="ph">
-    <div class="ph-left"><h2>🏪 上下架管理</h2><p>管理各款式在各平台的上架狀態</p></div>
-    <button class="btn btn-s btn-sm" onclick="exportListing()">⬇ 匯出 Excel</button>
-  </div>
-  <div class="fbar">
-    <div class="fg"><label>搜尋款式</label><input class="si" id="f-lsearch" placeholder="名稱或編號…" oninput="renderListing()"></div>
-    <div class="fg"><label>狀態篩選</label>
-      <select id="f-lstatus" onchange="renderListing()">
-        <option value="">全部</option>
-        <option>上架中</option><option>待上架</option><option>待下架</option><option>待補貨</option><option>停賣</option>
-      </select>
-    </div>
-    <button class="btn btn-s btn-sm" onclick="clrF('l')">清除</button>
-  </div>
-  <div class="card">
-    <div class="listing-grid">
-      <table class="listing-table" id="listing-table">
-        <thead id="listing-thead"></thead>
-        <tbody id="listing-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- PRODUCT COSTS -->
-<section id="page-costs" class="page">
-  <div class="ph">
-    <div class="ph-left"><h2>💰 商品成本</h2><p>成本設定、利潤計算、訂貨記錄</p></div>
-    <button class="btn btn-p" onclick="openM('m-newpo')">＋ 新增訂貨記錄</button>
-  </div>
-
-  <!-- Calculator -->
-  <div class="cost-calc-box">
+<!-- 利潤計算機（商品頁工具，彈出視窗） -->
+<div class="mbg" id="m-calc">
+<div class="modal" style="width:640px;max-width:96vw;padding:0;background:transparent;box-shadow:none">
+  <div class="cost-calc-box" style="margin:0;position:relative">
+    <button class="mclose" onclick="closeM('m-calc')" style="position:absolute;top:14px;right:14px;color:rgba(255,255,255,.7)">✕</button>
     <h3>📐 利潤計算機</h3>
     <label style="color:rgba(255,255,255,.6);font-size:10px;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">勾選商品</label>
     <div class="calc-checkbox-grid" id="calc-prod-grid"></div>
@@ -568,35 +612,13 @@ tr:hover td{background:#F4F8FD}
       <div class="calc-res"><div class="cr-lbl">淨利 Net Profit</div><div class="cr-val" id="cr-np">—</div></div>
     </div>
   </div>
-
-  <!-- Cost table -->
-  <div class="card" style="margin-bottom:18px">
-    <div class="card-hdr"><h3>商品成本設定</h3>
-      <button class="btn btn-s btn-sm" onclick="saveAllCosts()">💾 儲存所有成本</button></div>
-    <div class="tscroll"><table>
-      <thead><tr><th>商品編號</th><th>商品名稱</th><th>分類</th>
-        <th style="color:var(--ok)">庫存</th>
-        <th>成本 (TWD)</th>
-        <th>預設售價</th><th>毛利率</th></tr></thead>
-      <tbody id="cost-tbody"></tbody>
-    </table></div>
-  </div>
-
-  <!-- Purchase orders -->
-  <div class="card">
-    <div class="card-hdr"><h3 id="po-count">訂貨記錄</h3>
-      <button class="btn btn-s btn-sm" onclick="exportPOs()">⬇ 匯出 Excel</button></div>
-    <div class="tscroll"><table>
-      <thead><tr><th>#</th><th>日期</th><th>商品</th><th>訂貨數量</th><th>單位成本</th><th>總支出</th><th>備註</th><th></th></tr></thead>
-      <tbody id="po-tbody"></tbody>
-    </table></div>
-  </div>
-</section>
+</div>
+</div>
 
 <!-- FINANCE PAGE -->
 <section id="page-finance" class="page">
   <div class="ph">
-    <div class="ph-left"><h2>📒 損益統計</h2><p>每月支出 + 出貨實收 → 計算每月營餘</p></div>
+    <div class="ph-left"><h2>📒 報表損益</h2><p>每月支出 + 出貨實收 → 計算每月營餘</p></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-s btn-sm" onclick="exportFinance()">⬇ 匯出 Excel</button>
     </div>
@@ -646,6 +668,10 @@ tr:hover td{background:#F4F8FD}
     <div style="font-size:12px;color:var(--gray);margin-bottom:14px">每行一個項目，輸入名稱與金額後點「＋」新增。</div>
     <!-- Items list -->
     <div id="fexp-rows" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+    <div id="fexp-auto" data-amt="0" style="display:none;padding:9px 12px;background:#F1F5F9;border-radius:8px;margin-bottom:12px;justify-content:space-between;align-items:center;font-size:13px">
+      <span style="color:var(--gray)">📥 補貨支出（自動）<span style="font-size:11px">· 由補貨紀錄帶入，不可編輯</span></span>
+      <strong id="fexp-auto-val" style="color:var(--err)">$0</strong>
+    </div>
     <button class="btn btn-s" style="font-size:12px;margin-bottom:16px" onclick="addExpRow()">＋ 新增支出項目</button>
     <div style="padding:12px 14px;background:#EFF5FD;border-radius:8px;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:13px;font-weight:700;color:var(--gray)">總支出</span>
@@ -695,11 +721,11 @@ tr:hover td{background:#F4F8FD}
 <!-- Add Restock -->
 <div class="mbg" id="m-restock">
   <div class="modal" style="width:500px">
-    <div class="mhdr"><h3 id="m-restock-title">📥 新增進貨記錄</h3><button class="mclose" onclick="closeM('m-restock')">✕</button></div>
+    <div class="mhdr"><h3 id="m-restock-title">📥 新增補貨記錄</h3><button class="mclose" onclick="closeM('m-restock')">✕</button></div>
     <div class="fgrid">
-      <div class="form-g"><label>進貨日期 *</label><input type="date" id="r-date"></div>
+      <div class="form-g"><label>補貨日期 *</label><input type="date" id="r-date"></div>
       <div class="form-g"><label>商品 *</label><select id="r-prod"><option value="">— 選擇 —</option></select></div>
-      <div class="form-g"><label>進貨數量 *</label><input type="number" id="r-qty" value="10" min="1"></div>
+      <div class="form-g"><label>補貨數量 *</label><input type="number" id="r-qty" value="10" min="1"></div>
       <div class="form-g"><label>入庫狀態 *</label>
         <select id="r-status">
           <option value="ordered">已訂貨（尚未到貨）</option>
@@ -708,6 +734,8 @@ tr:hover td{background:#F4F8FD}
         </select>
         <span class="hint">選擇此批貨物目前的狀態</span>
       </div>
+      <div class="form-g"><label>單位成本 (TWD)</label><input type="number" id="r-ucost" value="0" min="0" oninput="updateRestockTotal()"></div>
+      <div class="form-g"><label>總支出 (TWD)</label><input type="number" id="r-total" value="0" min="0"><span class="hint">自動＝數量×單位成本，可手動修改</span></div>
       <div class="form-g" style="grid-column:span 2"><label>備註</label><input type="text" id="r-note" placeholder="供應商、批次…"></div>
     </div>
     <!-- Live inventory status preview -->
@@ -828,7 +856,7 @@ const S={
   set(k,v){ MEM[k]=v; persist(k,v); }
 };
 // key → 資料表對照
-const _TBL={iis2_p:'products',iis2_i:'inventory',iis2_o:'orders',iis2_r:'restocks',iis2_rt:'returns',iis2_plat:'platforms',iis2_pfees:'platform_fees',iis2_listing:'listings',iis2_pcosts:'costs',iis2_pos:'purchase_orders',iis2_ship:'shipping_methods',iis2_pkgdef:'packaging_defaults',iis2_fin:'finance_expenses'};
+const _TBL={iis2_p:'products',iis2_i:'inventory',iis2_o:'orders',iis2_r:'restocks',iis2_rt:'returns',iis2_plat:'platforms',iis2_pfees:'platform_fees',iis2_listing:'listings',iis2_pcosts:'costs',iis2_ship:'shipping_methods',iis2_pkgdef:'packaging_defaults',iis2_fin:'finance_expenses'};
 function _sbBanner(msg,ok){ let el=document.getElementById('_sbbanner'); if(!el){el=document.createElement('div');el.id='_sbbanner';el.style.cssText='position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:99999;padding:10px 18px;border-radius:12px;font:600 13px Poppins,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.18);transition:opacity .3s';document.body.appendChild(el);} el.style.background=ok?'#2F8F5A':'#D2553F'; el.style.color='#fff'; el.textContent=msg; el.style.opacity='1'; clearTimeout(el._t); el._t=setTimeout(()=>el.style.opacity='0', ok?1600:5000); }
 // 寫回佇列（序列化，保序、避免 race）
 let _pq=Promise.resolve();
@@ -854,9 +882,8 @@ async function _doPersist(k,v){
   if(k==='iis2_p'){ return _delDiff('products','id',(v||[]).map(p=>({id:p.id,name:p.name,category:p.category||'其他',safety_stock:p.safetyStock||5,prices:p.prices||{},is_packaging:!!p.isPackaging}))); }
   if(k==='iis2_i'){ const rows=(v||[]).map(i=>({product_id:i.productId,ordered:i.ordered||0,pending:i.pending||0,in_stock:i.inStock||0,ng:i.ng||0,scrapped:i.scrapped||0,safety_stock:i.safetyStock||0,total_in:i.totalIn||0,total_out:i.totalOut||0})); if(rows.length){const {error}=await sb.from('inventory').upsert(rows,{onConflict:'product_id'}); if(error)throw error;} return; }
   if(k==='iis2_o'){ return _persistOrders(v||[]); }
-  if(k==='iis2_r'){ return _delDiff('restocks','id',(v||[]).map(r=>({id:r.id,date:r.date,product_id:r.productId||null,product_name:r.productName||null,qty:r.qty||0,status:r.status||'inStock',notes:r.notes||null}))); }
-  if(k==='iis2_rt'){ return _delDiff('returns','id',(v||[]).map(r=>({id:r.id,date:r.date,platform:r.platform||null,product_id:r.productId||null,product_name:r.productName||null,qty:r.qty||0,condition:r.condition||'good',refund_amount:r.refundAmount||0,reason:r.reason||null,notes:r.notes||null,packaging:r.packaging||[],items:r.items||[]}))); }
-  if(k==='iis2_pos'){ return _delDiff('purchase_orders','id',(v||[]).map(r=>({id:r.id,date:r.date,product_id:r.productId||null,product_name:r.productName||null,qty:r.qty||0,unit_cost:r.unitCost||0,total:r.total||0,notes:r.notes||null}))); }
+  if(k==='iis2_r'){ return _delDiff('restocks','id',(v||[]).map(r=>({id:r.id,date:r.date,product_id:r.productId||null,product_name:r.productName||null,qty:r.qty||0,status:r.status||'inStock',unit_cost:r.unitCost||0,total:r.total||0,notes:r.notes||null}))); }
+  if(k==='iis2_rt'){ return _delDiff('returns','id',(v||[]).map(r=>({id:r.id,date:r.date,platform:r.platform||null,order_id:r.orderId||null,product_id:r.productId||null,product_name:r.productName||null,qty:r.qty||0,condition:r.condition||'good',refund_amount:r.refundAmount||0,reason:r.reason||null,notes:r.notes||null,packaging:r.packaging||[],items:r.items||[]}))); }
   if(k==='iis2_pcosts'){ const obj=v||{}; return _delDiff('costs','product_id',Object.keys(obj).map(pid=>({product_id:pid,unit_cost:obj[pid].unitCost||0,default_price:obj[pid].defaultPrice||0}))); }
   if(k==='iis2_plat'){ return _replaceAll('platforms','id',false,(v||[]).map((n,i)=>({name:n,sort_order:i}))); }
   if(k==='iis2_ship'){ return _replaceAll('shipping_methods','id',false,(v||[]).map((n,i)=>({name:n,sort_order:i}))); }
@@ -866,7 +893,7 @@ async function _doPersist(k,v){
   if(k==='iis2_fin'){ const obj=v||{}; return _replaceAll('finance_expenses','month',true,Object.keys(obj).map(m=>({month:m,items:(obj[m]&&obj[m].items)||[]}))); }
 }
 async function _persistOrders(orders){
-  const rows=orders.map(o=>({id:o.id,date:o.date,order_id:o.orderId||null,platform:o.platform||null,qty:o.qty||0,subtotal:o.subtotal||0,commission_rate:o.commissionRate||0,commission_amt:o.commissionAmt||0,service_fee:o.serviceFee||0,shipping_fee:o.shippingFee||0,net_revenue:o.netRevenue||0,shipping_method:o.shippingMethod||null,notes:o.notes||null,packaging:o.packaging||[],source:o.source||'manual',line_user_id:o.lineUserId||null}));
+  const rows=orders.map(o=>({id:o.id,date:o.date,order_id:o.orderId||null,platform:o.platform||null,qty:o.qty||0,subtotal:o.subtotal||0,commission_rate:o.commissionRate||0,commission_amt:o.commissionAmt||0,service_fee:o.serviceFee||0,shipping_fee:o.shippingFee||0,net_revenue:o.netRevenue||0,shipping_method:o.shippingMethod||null,notes:o.notes||null,packaging:o.packaging||[],source:o.source||'manual',line_user_id:o.lineUserId||null,status:o.status||'shipped'}));
   const sk='_snap_orders', prev=MEM[sk]||[], now=orders.map(o=>o.id);
   const del=prev.filter(x=>!now.includes(x));
   if(del.length){ let {error}=await sb.from('order_items').delete().in('order_id',del); if(error)throw error; ({error}=await sb.from('orders').delete().in('id',del)); if(error)throw error; }
@@ -879,23 +906,22 @@ async function _persistOrders(orders){
 }
 // 開機：把所有表讀進 MEM（blob 形狀）
 async function loadAll(){
-  const [p,i,o,oi,r,rt,pos,costs,plat,pfees,listing,ship,pkg,fin,setg]=await Promise.all([
+  const [p,i,o,oi,r,rt,costs,plat,pfees,listing,ship,pkg,fin,setg]=await Promise.all([
     sb.from('products').select('*'), sb.from('inventory').select('*'), sb.from('orders').select('*').order('date',{ascending:true}),
     sb.from('order_items').select('*'), sb.from('restocks').select('*'), sb.from('returns').select('*'),
-    sb.from('purchase_orders').select('*'), sb.from('costs').select('*'), sb.from('platforms').select('*').order('sort_order'),
+    sb.from('costs').select('*'), sb.from('platforms').select('*').order('sort_order'),
     sb.from('platform_fees').select('*'), sb.from('listings').select('*'), sb.from('shipping_methods').select('*').order('sort_order'),
     sb.from('packaging_defaults').select('*'), sb.from('finance_expenses').select('*'), sb.from('app_settings').select('*')
   ]);
-  for(const x of [p,i,o,oi,r,rt,pos,costs,plat,pfees,listing,ship,pkg,fin,setg]){ if(x.error) throw x.error; }
+  for(const x of [p,i,o,oi,r,rt,costs,plat,pfees,listing,ship,pkg,fin,setg]){ if(x.error) throw x.error; }
   MEM['iis2_p']=(p.data||[]).map(r=>({id:r.id,name:r.name,category:r.category,safetyStock:r.safety_stock,prices:r.prices||{},isPackaging:r.is_packaging}));
   MEM['_snap_products']=MEM['iis2_p'].map(x=>x.id);
   MEM['iis2_i']=(i.data||[]).map(r=>({productId:r.product_id,ordered:r.ordered,pending:r.pending,inStock:r.in_stock,ng:r.ng,scrapped:r.scrapped,safetyStock:r.safety_stock,totalIn:r.total_in,totalOut:r.total_out}));
   const itemsBy={}; (oi.data||[]).forEach(it=>{(itemsBy[it.order_id]=itemsBy[it.order_id]||[]).push({productId:it.product_id,productName:it.product_name,qty:it.qty,unitPrice:it.unit_price,discount:it.discount,subtotal:it.subtotal});});
-  MEM['iis2_o']=(o.data||[]).map(r=>{const its=itemsBy[r.id]||[];const f=its[0]||{};return {id:r.id,date:r.date,orderId:r.order_id,platform:r.platform,qty:r.qty,subtotal:r.subtotal,commissionRate:r.commission_rate,commissionAmt:r.commission_amt,serviceFee:r.service_fee,shippingFee:r.shipping_fee,netRevenue:r.net_revenue,shippingMethod:r.shipping_method,notes:r.notes,packaging:r.packaging||[],source:r.source,lineUserId:r.line_user_id,items:its,productId:f.productId,productName:f.productName,unitPrice:f.unitPrice,discount:f.discount};});
+  MEM['iis2_o']=(o.data||[]).map(r=>{const its=itemsBy[r.id]||[];const f=its[0]||{};return {id:r.id,date:r.date,orderId:r.order_id,platform:r.platform,qty:r.qty,subtotal:r.subtotal,commissionRate:r.commission_rate,commissionAmt:r.commission_amt,serviceFee:r.service_fee,shippingFee:r.shipping_fee,netRevenue:r.net_revenue,shippingMethod:r.shipping_method,notes:r.notes,packaging:r.packaging||[],source:r.source,lineUserId:r.line_user_id,status:r.status||'shipped',items:its,productId:f.productId,productName:f.productName,unitPrice:f.unitPrice,discount:f.discount};});
   MEM['_snap_orders']=MEM['iis2_o'].map(x=>x.id);
-  MEM['iis2_r']=(r.data||[]).map(x=>({id:x.id,date:x.date,productId:x.product_id,productName:x.product_name,qty:x.qty,status:x.status,notes:x.notes})); MEM['_snap_restocks']=MEM['iis2_r'].map(x=>x.id);
-  MEM['iis2_rt']=(rt.data||[]).map(x=>({id:x.id,date:x.date,platform:x.platform,productId:x.product_id,productName:x.product_name,qty:x.qty,condition:x.condition,refundAmount:x.refund_amount,reason:x.reason,notes:x.notes,packaging:x.packaging||[],items:x.items||[]})); MEM['_snap_returns']=MEM['iis2_rt'].map(x=>x.id);
-  MEM['iis2_pos']=(pos.data||[]).map(x=>({id:x.id,date:x.date,productId:x.product_id,productName:x.product_name,qty:x.qty,unitCost:x.unit_cost,total:x.total,notes:x.notes})); MEM['_snap_purchase_orders']=MEM['iis2_pos'].map(x=>x.id);
+  MEM['iis2_r']=(r.data||[]).map(x=>({id:x.id,date:x.date,productId:x.product_id,productName:x.product_name,qty:x.qty,status:x.status,unitCost:x.unit_cost||0,total:x.total||0,notes:x.notes})); MEM['_snap_restocks']=MEM['iis2_r'].map(x=>x.id);
+  MEM['iis2_rt']=(rt.data||[]).map(x=>({id:x.id,date:x.date,platform:x.platform,orderId:x.order_id||null,productId:x.product_id,productName:x.product_name,qty:x.qty,condition:x.condition,refundAmount:x.refund_amount,reason:x.reason,notes:x.notes,packaging:x.packaging||[],items:x.items||[]})); MEM['_snap_returns']=MEM['iis2_rt'].map(x=>x.id);
   const co={}; (costs.data||[]).forEach(x=>co[x.product_id]={unitCost:x.unit_cost,defaultPrice:x.default_price}); MEM['iis2_pcosts']=co; MEM['_snap_costs']=Object.keys(co);
   MEM['iis2_plat']=(plat.data||[]).map(x=>x.name);
   const pf={}; (pfees.data||[]).forEach(x=>pf[x.platform]={comm:x.comm,fixed:x.fixed,shipping:x.shipping}); MEM['iis2_pfees']=pf;
@@ -905,7 +931,7 @@ async function loadAll(){
   const fn={}; (fin.data||[]).forEach(x=>fn[x.month]={items:x.items||[]}); MEM['iis2_fin']=fn;
   const st={}; (setg.data||[]).forEach(x=>st[x.key]=x.value); MEM['iis2_sd']=st.sd?st.sd.v:null;
 }
-const K={P:'iis2_p',I:'iis2_i',O:'iis2_o',R:'iis2_r',RT:'iis2_rt',SD:'iis2_sd',PLAT:'iis2_plat',PFEES:'iis2_pfees',LISTING:'iis2_listing',COSTS:'iis2_pcosts',POS:'iis2_pos',SHIP:'iis2_ship',PKGDEF:'iis2_pkgdef',FIN:'iis2_fin'};
+const K={P:'iis2_p',I:'iis2_i',O:'iis2_o',R:'iis2_r',RT:'iis2_rt',SD:'iis2_sd',PLAT:'iis2_plat',PFEES:'iis2_pfees',LISTING:'iis2_listing',COSTS:'iis2_pcosts',SHIP:'iis2_ship',PKGDEF:'iis2_pkgdef',FIN:'iis2_fin'};
 const DEFAULT_SHIPPING=['蝦皮物流','黑貓宅急便','711超商取貨','全家超商取貨','郵寄','自取','其他'];
 
 function gP(){return S.get(K.P)||[];}
@@ -916,7 +942,6 @@ function gRT(){return S.get(K.RT)||[];}
 function gPF(){return S.get(K.PFEES)||{};}
 function gListing(){return S.get(K.LISTING)||{};}
 function gCosts(){return S.get(K.COSTS)||{};}
-function gPOs(){return S.get(K.POS)||[];}
 function gPlats(){return S.get(K.PLAT)||SEED.platforms;}
 function gShipping(){return S.get(K.SHIP)||DEFAULT_SHIPPING;}
 function gPkgDef(){return S.get(K.PKGDEF)||{};}
@@ -961,7 +986,7 @@ function init(){
     S.set(K.P,SEED.products); S.set(K.I,SEED.inventory);
     S.set(K.O,SEED.orders); S.set(K.R,SEED.restocks);
     S.set(K.RT,[]); S.set(K.PLAT,SEED.platforms);
-  S.set(K.PFEES,{}); S.set(K.LISTING,{}); S.set(K.COSTS,{}); S.set(K.POS,[]); S.set(K.SD,1);
+  S.set(K.PFEES,{}); S.set(K.LISTING,{}); S.set(K.COSTS,{}); S.set(K.SD,1);
   }
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('o-date').value=today;
@@ -974,12 +999,14 @@ function init(){
     item.classList.add('active');
     document.getElementById('page-'+item.dataset.page).classList.add('active');
     document.querySelector('.sidebar').classList.remove('open');document.getElementById('menuBackdrop').classList.remove('show');
-    ({dashboard:renderDash,sales:renderSalesPage,restocks:renderRestocks,inventory:renderInv,products:renderProducts,listing:renderListing,costs:renderCosts,finance:renderFinance})[item.dataset.page]?.();
+    ({dashboard:renderDash,sales:renderSalesPage,restocks:renderRestocks,inventory:renderInv,products:renderProductsPage,finance:renderFinance,settings:renderSettingsPage})[item.dataset.page]?.();
   });
   document.querySelectorAll('.mbg').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));
   // Restock preview on product/status/qty change
   ['r-prod','r-status','r-qty'].forEach(id=>document.getElementById(id).addEventListener('change',updateRestockPreview));
   document.getElementById('r-qty').addEventListener('input',updateRestockPreview);
+  // 補貨總支出自動計算（數量或單位成本變動時）
+  document.getElementById('r-qty').addEventListener('input',updateRestockTotal);
   // Return preview
   ['ret-cond'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('change',updateReturnPreview);el.addEventListener('input',updateReturnPreview);}});
   // Inline-edit delegation for order table
@@ -1012,8 +1039,71 @@ function renderSalesPage(){
 }
 function clrSalesFilter(){
   ['sf-search','sf-from','sf-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['sf-plat','sf-rtcond'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['sf-plat','sf-rtcond','sf-ostatus'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   renderSalesPage();
+}
+// ── 頁內子頁籤切換（不重新載入資料，只切顯示） ──
+function switchSubTab(btn,panelId){
+  const group=btn.closest('.subtabs'); if(!group)return;
+  group.querySelectorAll('.subtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const section=group.closest('.page'); if(!section)return;
+  section.querySelectorAll('.subtab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId)?.classList.add('active');
+}
+// ── 共用切頁（等效於側邊欄 nav 點擊）──
+// page: dashboard/sales/restocks/inventory/products/finance/settings
+// setup: 切頁並執行對應 render 後才呼叫的回呼（可在此設篩選再重繪）
+function gotoPage(page,setup){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="'+page+'"]')?.classList.add('active');
+  document.getElementById('page-'+page)?.classList.add('active');
+  document.querySelector('.sidebar')?.classList.remove('open');
+  document.getElementById('menuBackdrop')?.classList.remove('show');
+  ({dashboard:renderDash,sales:renderSalesPage,restocks:renderRestocks,inventory:renderInv,products:renderProductsPage,finance:renderFinance,settings:renderSettingsPage})[page]?.();
+  if(typeof setup==='function')setup();
+}
+// 依 panelId 找到對應子頁籤按鈕並切換（供待辦卡跳轉用）
+function _activateSubTab(panelId){
+  const panel=document.getElementById(panelId); if(!panel)return;
+  const page=panel.closest('.page'); if(!page)return;
+  const btn=page.querySelector('.subtab[onclick*="'+panelId+'"]');
+  if(btn)switchSubTab(btn,panelId);
+}
+// 待辦卡：待出貨 → 出貨管理頁、出貨子頁籤、篩選 pending
+function todoGoPendingShip(){
+  gotoPage('sales',()=>{
+    _activateSubTab('st-orders');
+    const f=document.getElementById('sf-ostatus'); if(f)f.value='pending';
+    renderOrders();
+  });
+}
+// 待辦卡：缺貨/低庫存 → 庫存頁，套用警示帶判準（out）
+function todoGoLowStock(){
+  gotoPage('inventory',()=>{
+    const f=document.getElementById('f-istat'); if(f)f.value='out';
+    renderInv();
+  });
+}
+// ── 商品頁（商品資料 + 上下架矩陣） ──
+function renderProductsPage(){
+  renderProducts();
+  renderListing();
+}
+// ── 設定頁 ──
+function renderSettingsPage(){
+  renderPlatFeeTable();
+  renderPlatTags();
+  renderShipTags();
+}
+// ── 利潤計算機（modal 版） ──
+function openCalcM(){
+  const cp=document.getElementById('calc-plat');
+  if(cp)cp.innerHTML='<option value="">— 選擇平台 —</option>'+gPlats().map(p=>`<option>${p}</option>`).join('');
+  const cpgrid=document.getElementById('calc-prod-grid');
+  if(cpgrid)cpgrid.innerHTML=gP().map(p=>`<label class="calc-cb-item"><input type="checkbox" class="calc-cb" value="${p.id}"> ${p.name}</label>`).join('');
+  openM('m-calc');
 }
 
 // ═══════════════════════════════════════════════
@@ -1037,9 +1127,6 @@ function refreshPlatDropdowns(){
   const opts=platOpts(false); const allOpts=platOpts(true);
   document.getElementById('o-plat').innerHTML=opts;
   const _sfplat=document.getElementById('sf-plat');if(_sfplat)_sfplat.innerHTML=allOpts;
-  const _foplat=document.getElementById('f-oplat');if(_foplat)_foplat.innerHTML=allOpts;
-  const _fsplat=document.getElementById('f-splat');if(_fsplat)_fsplat.innerHTML=allOpts;
-  const _rtplat=document.getElementById('f-rtplat');if(_rtplat)_rtplat.innerHTML=allOpts;
   const _retplat=document.getElementById('ret-plat');if(_retplat)_retplat.innerHTML=platOpts(false);
   const _eoplat=document.getElementById('eo-plat');if(_eoplat)_eoplat.innerHTML=platOpts(false);
   const _erplat=document.getElementById('er-plat');if(_erplat)_erplat.innerHTML=platOpts(false);
@@ -1162,29 +1249,12 @@ function updInvStatus(pid,statusField,delta){
   if(statusField==='inStock'&&delta<0)it.totalOut=(it.totalOut||0)+Math.abs(delta);
   S.set(K.I,inv);
 }
-function openM(id){if(id==='m-order'||id==='m-restock'||id==='m-return'||id==='m-newpo')fillDrops();document.getElementById(id).classList.add('open');}
+function openM(id){if(id==='m-order'||id==='m-restock'||id==='m-return')fillDrops();document.getElementById(id).classList.add('open');}
 function closeM(id){document.getElementById(id).classList.remove('open');}
 function fillDrops(){
   const ps=gP(); const opts='<option value="">— 選擇商品 —</option>'+ps.map(p=>`<option value="${p.id}">${p.name}（${p.id}）</option>`).join('');
-  ['r-prod','po-prod'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
-  // calc-prod now uses checkboxes, populated in renderCosts
-}
-function fillPrice(){
-  const plat=document.getElementById('o-plat').value;
-  const pid=document.getElementById('o-prod').value;
-  const p=gP().find(x=>x.id===pid); const k=platKey(plat);
-  if(p&&k&&p.prices){const pr=p.prices[k]||0;if(pr>0)document.getElementById('o-price').value=pr;}
-  // 載入此商品分類對應的包裝品預設
-  if(p)loadPkgChecks(p.category||'','o-pkg-checks');
-  else{const el=document.getElementById('o-pkg-checks');if(el)el.innerHTML='<span style="font-size:11px;color:var(--gray)">請先選擇商品</span>';}
-  calcSub();
-}
-function calcSub(){
-  const q=+(document.getElementById('o-qty')?.value)||0;
-  const pr=+(document.getElementById('o-price')?.value)||0;
-  const d=+(document.getElementById('o-disc')?.value)||100;
-  const sub=Math.round(q*pr*(d/100));
-  document.getElementById('o-sub').textContent=sub>0?'$'+fn(sub):'—';
+  ['r-prod'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+  // calc-prod 使用 checkbox，由 openCalcM 填入
 }
 function updateRestockPreview(){
   const pid=document.getElementById('r-prod').value;
@@ -1200,11 +1270,8 @@ function updateRestockPreview(){
   document.getElementById('rp-ng').textContent=preview.ng;
 }
 function clrF(p){
-  if(p==='o'){['f-osearch','f-omonth'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('f-oplat').value='';renderOrders();}
   if(p==='i'){['f-isearch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});['f-icat','f-istat'].forEach(id=>document.getElementById(id).value='');renderInv();}
-  if(p==='s'){['f-sprod','f-sfrom','f-sto'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('f-splat').value='';renderStats();}
   if(p==='p'){document.getElementById('f-psearch').value='';document.getElementById('f-pcat').value='';renderProducts();}
-  if(p==='rt'){['f-rtsearch','f-rtmonth'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});['f-rtplat','f-rtcond'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderReturns();}
   if(p==='l'){const el=document.getElementById('f-lsearch');if(el)el.value='';const el2=document.getElementById('f-lstatus');if(el2)el2.value='';renderListing();}
 }
 
@@ -1235,6 +1302,18 @@ function renderDash(){
     <div class="kpi" style="border-left:4px solid #DB2777"><div class="lbl">本月退貨</div><div class="val" style="color:#DB2777">${mRets.length}</div><div class="sub">${mRets.reduce((s,r)=>s+(r.qty||0),0)} 件</div></div>`;
   const alertProds=oos.slice(0,4).map(i=>{const p=prods.find(x=>x.id===i.productId);return p?p.name:i.productId;});
   document.getElementById('dash-alert').innerHTML=oos.length>0?`<div class="alert-strip">⚠ 已入庫=0：${alertProds.join('、')}${oos.length>4?` 等共 ${oos.length} 項`:''}</div>`:'';
+  // ── P2 待辦行動卡 ──
+  const pendShip=orders.filter(o=>(o.status||'shipped')==='pending').length;
+  const lowStock=oos.length; // 沿用補貨警示帶判準（inStock<=0）
+  const inTransit=gR().filter(r=>r.status==='ordered'||r.status==='pending').length;
+  const todoEl=document.getElementById('dash-todo-row');
+  if(todoEl)todoEl.innerHTML=`
+    <div class="todo-card${pendShip===0?' tc-zero':''}" onclick="todoGoPendingShip()">
+      <span class="tc-ico">⏳</span><div><div class="tc-lbl">待出貨</div><div class="tc-val">${pendShip}</div><div class="tc-sub">筆 · 點擊處理</div></div></div>
+    <div class="todo-card${lowStock===0?' tc-zero':''}" onclick="todoGoLowStock()">
+      <span class="tc-ico">🚨</span><div><div class="tc-lbl">缺貨/低庫存</div><div class="tc-val">${lowStock}</div><div class="tc-sub">品 · 點擊補貨</div></div></div>
+    <div class="todo-card${inTransit===0?' tc-zero':''}" onclick="gotoPage('restocks')">
+      <span class="tc-ico">🚚</span><div><div class="tc-lbl">補貨在途</div><div class="tc-val">${inTransit}</div><div class="tc-sub">筆 · 點擊查看</div></div></div>`;
   const pc={};mOrds.forEach(o=>{pc[o.platform||'其他']=(pc[o.platform||'其他']||0)+(o.qty||1);});
   if(CHARTS.p)CHARTS.p.destroy();
   CHARTS.p=new Chart(document.getElementById('c-platform'),{type:'doughnut',data:{labels:Object.keys(pc),datasets:[{data:Object.values(pc),backgroundColor:['#2E5AA7','#F59A5B','#86C5FF','#F8E6A0','#21314F','#5BA3E0','#5E6B86','#A8D4FF','#FFC470'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:8}}}}});
@@ -1242,7 +1321,7 @@ function renderDash(){
   const ms=Object.keys(mc).sort();
   if(CHARTS.m)CHARTS.m.destroy();
   CHARTS.m=new Chart(document.getElementById('c-monthly'),{type:'bar',data:{labels:ms.map(m=>m.replace('-','/')),datasets:[{data:ms.map(m=>mc[m]),backgroundColor:'rgba(46,90,167,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#E3ECF7'}},x:{grid:{display:false}}}}});
-  document.getElementById('alert-tbody').innerHTML=oos.length>0?oos.slice(0,15).map(i=>{const p=prods.find(x=>x.id===i.productId);return`<tr><td><strong>${p?p.name:i.productId}</strong><br><span style="font-size:11px;color:var(--gray)">${i.productId}</span></td><td style="color:var(--err);font-weight:700">0</td><td style="color:var(--warn);font-weight:700">${i.pending||0}</td><td style="color:#3B82F6">${i.safetyStock||'—'}</td><td><span class="b b-out">⚠ 缺貨</span></td></tr>`;}).join(''):'<tr><td colspan="5" class="empty">✅ 目前無缺貨品項</td></tr>';
+  document.getElementById('alert-tbody').innerHTML=oos.length>0?oos.slice(0,15).map(i=>{const p=prods.find(x=>x.id===i.productId);return`<tr><td><strong>${p?p.name:i.productId}</strong><br><span style="font-size:11px;color:var(--gray)">${i.productId}</span></td><td style="color:var(--err);font-weight:700">0</td><td style="color:var(--warn);font-weight:700">${i.pending||0}</td><td style="color:#3B82F6">${i.safetyStock||'—'}</td><td><span class="b b-out">⚠ 缺貨</span></td><td><button class="btn btn-sm btn-p" onclick="quickRestock('${i.productId}')" title="一鍵開補貨單">📥 補貨</button></td></tr>`;}).join(''):'<tr><td colspan="6" class="empty">✅ 目前無缺貨品項</td></tr>';
   // Category breakdown chart (selected month)
   const cc={};mOrds.forEach(o=>{const pid=(o.productId||'').toLowerCase();const p=prods.find(x=>(x.id||'').toLowerCase()===pid);const cat=p?.category||'未分類';cc[cat]=(cc[cat]||0)+(o.qty||1);});
   if(CHARTS.cat)CHARTS.cat.destroy();
@@ -1270,14 +1349,16 @@ function renderDash(){
 // ═══════════════════════════════════════════════
 function renderOrders(){
   let orders=gO();
-  const s=(document.getElementById('sf-search')?.value||document.getElementById('f-osearch')?.value||'').toLowerCase();
-  const df=document.getElementById('sf-from')?.value||document.getElementById('f-omonth')?.value||'';
+  const s=(document.getElementById('sf-search')?.value||'').toLowerCase();
+  const df=document.getElementById('sf-from')?.value||'';
   const dt=document.getElementById('sf-to')?.value||'';
-  const pl=document.getElementById('sf-plat')?.value||document.getElementById('f-oplat')?.value||'';
-  if(s)orders=orders.filter(o=>(o.productName||'').toLowerCase().includes(s)||(o.productId||'').toLowerCase().includes(s));
+  const pl=document.getElementById('sf-plat')?.value||'';
+  const ost=document.getElementById('sf-ostatus')?.value||'';
+  if(s)orders=orders.filter(o=>(o.productName||'').toLowerCase().includes(s)||(o.productId||'').toLowerCase().includes(s)||(o.orderId||'').toLowerCase().includes(s));
   if(df)orders=orders.filter(o=>o.date&&o.date>=df);
   if(dt)orders=orders.filter(o=>o.date&&o.date<=dt);
   if(pl)orders=orders.filter(o=>o.platform===pl);
+  if(ost)orders=orders.filter(o=>(o.status||'shipped')===ost);
   orders=[...orders].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   document.getElementById('o-count').textContent=`共 ${orders.length} 筆出貨記錄`;
   const inv=gI();
@@ -1310,15 +1391,30 @@ function renderOrders(){
         <td rowspan="${rs}" style="font-size:11px;vertical-align:middle">${totalFee>0?'$'+fn(totalFee):'<span style="color:var(--gray)">—</span>'}</td>
         <td rowspan="${rs}" class="${netCls}" data-cell="net-${o.id}" style="vertical-align:middle"><input type="number" value="${net}" style="width:70px;border:1px solid var(--border);border-radius:4px;padding:2px 4px;font-size:12px;font-weight:700;color:inherit;background:transparent;text-align:right" onchange="saveOrderNet('${o.id}',this.value)"></td>
         <td rowspan="${rs}" style="font-size:11px;color:var(--gray);vertical-align:middle">${o.shippingMethod||'—'}</td>
+        <td rowspan="${rs}" style="vertical-align:middle;white-space:nowrap">${orderStatusBadge(o.status)}${(o.status||'shipped')==='pending'?`<br><button class="btn btn-sm btn-s" style="margin-top:4px;color:var(--ok);border-color:var(--ok)" onclick="markOrderShipped('${o.id}')" title="一鍵標記已出貨">✓ 標記已出貨</button>`:''}</td>
         <td rowspan="${rs}" style="vertical-align:middle">
-          <div style="display:flex;gap:4px">
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-s" onclick="openReturnFromOrder('${o.id}')" title="以此單建立退貨">↩ 建退貨</button>
             <button class="btn btn-sm btn-s" onclick="openEditOrder('${o.id}')">✏</button>
             <button class="btn btn-sm btn-s" style="color:var(--err);border-color:var(--err)" onclick="delOrder('${o.id}')">刪</button>
           </div>
         </td>`:''}
       </tr>`;
     }).join('');
-  }).join(''):'<tr><td colspan="11" class="empty">尚無出貨記錄</td></tr>';
+  }).join(''):'<tr><td colspan="12" class="empty">尚無出貨記錄</td></tr>';
+}
+// 出貨狀態 badge
+function orderStatusBadge(st){
+  return (st||'shipped')==='pending'
+    ?'<span class="b" style="background:#FEF3C7;color:#92400E">⏳ 待出貨</span>'
+    :'<span class="b" style="background:#D1FAE5;color:#065F46">✅ 已出貨</span>';
+}
+// 一鍵標記已出貨（同筆 update status）
+function markOrderShipped(id){
+  const orders=gO(); const o=orders.find(x=>x.id===id); if(!o)return;
+  o.status='shipped'; S.set(K.O,orders);
+  renderOrders(); renderStats();
+  _sbBanner('✅ 已標記出貨：'+(o.productName||o.id),true);
 }
 function saveOrderNet(id,val){
   let orders=gO(); const o=orders.find(x=>x.id===id); if(!o)return;
@@ -1392,7 +1488,7 @@ function saveOrder(){
     productId:first.productId,productName:first.productName,qty:totalQty,
     unitPrice:first.unitPrice,discount:first.discount,subtotal:totalSub,
     commissionRate:commRate,serviceFee:svcFee,shippingFee:shipFee,commissionAmt:commAmt,netRevenue:netRev,
-    shippingMethod,notes:document.getElementById('o-note').value,packaging:pkgList,items};
+    shippingMethod,notes:document.getElementById('o-note').value,packaging:pkgList,items,status:'pending'};
   const orders=gO(); orders.push(order); S.set(K.O,orders);
   items.forEach(it=>updInvStatus(it.productId,'inStock',-it.qty));
   applyPkgInv(pkgList,totalQty,-1);
@@ -1400,41 +1496,109 @@ function saveOrder(){
   document.getElementById('o-oid').value=''; document.getElementById('o-note').value='';
   document.getElementById('o-plat').value='';
   document.getElementById('o-items-rows').innerHTML='';
-  renderOrders(); alert(`✅ 已出貨：${items.map(it=>it.productName+'×'+it.qty).join('、')}`);
+  renderOrders(); renderStats(); alert(`✅ 已建立出貨單（待出貨）：${items.map(it=>it.productName+'×'+it.qty).join('、')}\n備貨完成後請在出貨紀錄點「✓ 標記已出貨」。`);
 }
-function delOrder(id){if(!confirm('確定刪除此出貨記錄？（庫存不會回補）'))return;S.set(K.O,gO().filter(o=>o.id!==id));renderOrders();}
+// 回補出貨扣減（與 saveOrder 的扣減完全對稱：in_stock += qty、total_out -= qty）
+function _revOutInv(pid,qty){
+  let inv=gI(); let it=inv.find(x=>x.productId===pid);
+  if(!it){it={productId:pid,ordered:0,pending:0,inStock:0,ng:0,scrapped:0,safetyStock:5,totalIn:0,totalOut:0};inv.push(it);}
+  it.inStock=(it.inStock||0)+qty;
+  it.totalOut=Math.max(0,(it.totalOut||0)-qty);
+  S.set(K.I,inv);
+}
+function delOrder(id){
+  const o=gO().find(x=>x.id===id); if(!o)return;
+  const items=o.items&&o.items.length?o.items:[{productId:o.productId,productName:o.productName,qty:o.qty||0}];
+  const detail=items.map(it=>`${it.productName||it.productId} ×${it.qty}`).join('、');
+  if(!confirm(`確定刪除此出貨記錄？\n\n${detail}\n\n刪除後將自動回補庫存（含包裝品）。`))return;
+  // 回補商品庫存（對稱於 saveOrder 的 updInvStatus(pid,'inStock',-qty)）
+  items.forEach(it=>_revOutInv(it.productId,it.qty||0));
+  // 回補包裝品（對稱於 applyPkgInv(pkgList,totalQty,-1)）
+  (o.packaging||[]).forEach(pkg=>_revOutInv(pkg.id,(pkg.qty||1)*(o.qty||0)));
+  S.set(K.O,gO().filter(x=>x.id!==id));
+  renderOrders(); renderStats();
+  _sbBanner('🗑 已刪除出貨單並回補庫存',true);
+}
 
 // ═══════════════════════════════════════════════
 // RESTOCKS
 // ═══════════════════════════════════════════════
 function renderRestocks(){
   const rs=[...gR()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  document.getElementById('r-count').textContent=`共 ${rs.length} 筆進貨記錄`;
-  document.getElementById('r-tbody').innerHTML=rs.length>0?rs.map((r,i)=>`<tr><td style="font-size:11px;color:var(--gray)">${rs.length-i}</td><td>${fd(r.date)}</td><td><strong>${r.productName||r.productId}</strong><br><span style="font-size:11px;color:var(--gray)">${r.productId}</span></td><td style="color:var(--ok);font-weight:700">+${r.qty}</td><td>${statusBadge(r.status)}</td><td>${r.notes||'—'}</td><td style="white-space:nowrap;display:flex;gap:4px"><button class="btn btn-sm btn-s" onclick="editRestock('${r.id}')">✏ 修改</button><button class="btn btn-sm btn-s" style="color:var(--err);border-color:var(--err)" onclick="delRestock('${r.id}')">刪</button></td></tr>`).join(''):'<tr><td colspan="7" class="empty">尚無進貨記錄</td></tr>';
+  document.getElementById('r-count').textContent=`共 ${rs.length} 筆補貨記錄`;
+  document.getElementById('r-tbody').innerHTML=rs.length>0?rs.map((r,i)=>{
+    const nextLabel={ordered:'待整理',pending:'已入庫'}[r.status];
+    const advBtn=nextLabel?`<button class="btn btn-sm btn-s" style="color:var(--acc);border-color:var(--acc)" onclick="advanceRestock('${r.id}')" title="推進到「${nextLabel}」">推進 →</button>`:'';
+    return`<tr><td style="font-size:11px;color:var(--gray)">${rs.length-i}</td><td>${fd(r.date)}</td><td><strong>${r.productName||r.productId}</strong><br><span style="font-size:11px;color:var(--gray)">${r.productId}</span></td><td style="color:var(--ok);font-weight:700">+${r.qty}</td><td>${r.unitCost>0?'$'+fn(r.unitCost):'<span style="color:var(--gray)">—</span>'}</td><td style="font-weight:700">${r.total>0?'$'+fn(r.total):'<span style="color:var(--gray)">—</span>'}</td><td>${statusBadge(r.status)}</td><td>${r.notes||'—'}</td><td style="white-space:nowrap;display:flex;gap:4px">${advBtn}<button class="btn btn-sm btn-s" onclick="editRestock('${r.id}')">✏ 修改</button><button class="btn btn-sm btn-s" style="color:var(--err);border-color:var(--err)" onclick="delRestock('${r.id}')">刪</button></td></tr>`;
+  }).join(''):'<tr><td colspan="9" class="empty">尚無補貨記錄</td></tr>';
+}
+// 同筆推進狀態：已訂貨 → 待整理 → 已入庫（舊桶減、新桶加；入庫時 updInvStatus 會自動累計 totalIn，與直接建「已入庫」一致）
+function advanceRestock(id){
+  const rs=gR(); const r=rs.find(x=>x.id===id); if(!r)return;
+  const next={ordered:'pending',pending:'inStock'}[r.status];
+  if(!next){alert('此筆已入庫，無法再推進。');return;}
+  updInvStatus(r.productId,r.status,-(r.qty||0));
+  updInvStatus(r.productId,next,(r.qty||0));
+  r.status=next; S.set(K.R,rs);
+  renderRestocks();
+  _sbBanner(`✅ ${r.productName||r.productId} × ${r.qty} 已推進至「${statusLabel(next)}」`,true);
+}
+// 總支出自動計算（數量 × 單位成本；可再手動覆蓋 r-total）
+function updateRestockTotal(){
+  const qty=+(document.getElementById('r-qty')?.value)||0;
+  const uc=+(document.getElementById('r-ucost')?.value)||0;
+  const tEl=document.getElementById('r-total');
+  if(tEl)tEl.value=qty*uc;
 }
 let _editRestockId=null;
 function openRestockNew(){
   _editRestockId=null;
-  document.getElementById('m-restock-title').textContent='📥 新增進貨記錄';
-  document.getElementById('r-save-btn').textContent='確認進貨 →';
+  document.getElementById('m-restock-title').textContent='📥 新增補貨記錄';
+  document.getElementById('r-save-btn').textContent='確認補貨 →';
   document.getElementById('r-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('r-qty').value=10;
   document.getElementById('r-status').value='inStock';
+  document.getElementById('r-ucost').value=0;
+  document.getElementById('r-total').value=0;
   document.getElementById('r-note').value='';
   openM('m-restock');
   document.getElementById('r-prod').value='';
   updateRestockPreview();
 }
+// ── 一鍵補貨（警示帶/庫存頁快捷）──
+// 預填：商品=該品、日期=今天、狀態=已訂貨(ordered)、數量=max(安全庫存−可出貨庫存,1)
+function quickRestock(pid){
+  const p=gP().find(x=>x.id===pid); if(!p){alert('找不到商品');return;}
+  const it=getInv(pid);
+  const ss=it.safetyStock||p.safetyStock||0;
+  const suggest=Math.max((ss||0)-(it.inStock||0),1);
+  _editRestockId=null;
+  document.getElementById('m-restock-title').textContent='📥 新增補貨記錄';
+  document.getElementById('r-save-btn').textContent='確認補貨 →';
+  fillDrops();
+  document.getElementById('r-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('r-status').value='ordered';
+  document.getElementById('r-ucost').value=0;
+  document.getElementById('r-total').value=0;
+  document.getElementById('r-note').value='';
+  openM('m-restock');
+  document.getElementById('r-prod').value=pid;
+  document.getElementById('r-qty').value=suggest;
+  updateRestockPreview();
+  updateRestockTotal();
+}
 function editRestock(id){
   const r=gR().find(x=>x.id===id); if(!r)return;
   _editRestockId=id;
-  document.getElementById('m-restock-title').textContent='✏ 修改進貨記錄';
+  document.getElementById('m-restock-title').textContent='✏ 修改補貨記錄';
   document.getElementById('r-save-btn').textContent='儲存修改 →';
   fillDrops();
   document.getElementById('r-date').value=r.date||'';
   document.getElementById('r-prod').value=r.productId||'';
   document.getElementById('r-qty').value=r.qty||1;
   document.getElementById('r-status').value=r.status||'inStock';
+  document.getElementById('r-ucost').value=r.unitCost||0;
+  document.getElementById('r-total').value=r.total||0;
   document.getElementById('r-note').value=r.notes||'';
   document.getElementById('m-restock').classList.add('open');
   updateRestockPreview();
@@ -1447,30 +1611,50 @@ function saveRestock(){
   if(!date||!pid||!qty){alert('請填寫必填欄位');return;}
   const p=gP().find(x=>x.id===pid);
   const note=document.getElementById('r-note').value;
+  const unitCost=+(document.getElementById('r-ucost').value)||0;
+  const total=+(document.getElementById('r-total').value)||0;
   const rs=gR();
   if(_editRestockId){
     const idx=rs.findIndex(x=>x.id===_editRestockId);
     if(idx>=0){
       const old=rs[idx];
       // 先還原舊記錄對庫存的影響，再套用修改後的數值
-      updInvStatus(old.productId, old.status, -(old.qty||0));
+      _revRestockInv(old.productId, old.status, old.qty||0);
       updInvStatus(pid, status, qty);
-      rs[idx]={...old,date,productId:pid,productName:p?.name||pid,qty,status,notes:note};
+      rs[idx]={...old,date,productId:pid,productName:p?.name||pid,qty,status,unitCost,total,notes:note};
       S.set(K.R,rs);
       _editRestockId=null;
       closeM('m-restock'); renderRestocks();
-      alert(`✅ 已更新進貨記錄：${p?.name||pid} × ${qty}（${statusLabel(status)}）`);
+      alert(`✅ 已更新補貨記錄：${p?.name||pid} × ${qty}（${statusLabel(status)}）`);
       return;
     }
   }
-  const rec={id:uid(),date,productId:pid,productName:p?.name||pid,qty,status,notes:note};
+  const rec={id:uid(),date,productId:pid,productName:p?.name||pid,qty,status,unitCost,total,notes:note};
   rs.push(rec); S.set(K.R,rs);
   updInvStatus(pid,status,qty);
   closeM('m-restock');
   document.getElementById('r-note').value=''; document.getElementById('r-prod').value=''; document.getElementById('r-qty').value=10;
-  renderRestocks(); alert(`✅ 已進貨：${p?.name||pid} × ${qty}（${statusLabel(status)}）`);
+  document.getElementById('r-ucost').value=0; document.getElementById('r-total').value=0;
+  renderRestocks(); alert(`✅ 已補貨：${p?.name||pid} × ${qty}（${statusLabel(status)}）`);
 }
-function delRestock(id){if(!confirm('確定刪除？（庫存不會扣減）'))return;S.set(K.R,gR().filter(r=>r.id!==id));renderRestocks();}
+// 還原一筆補貨對庫存的影響（與新增完全對稱）：
+// 新增時 updInvStatus(pid,status,+qty)：桶位 +qty；若 status=inStock 另 totalIn +qty。
+// 還原時：桶位 -qty；若 status=inStock 另 totalIn -qty（不動 totalOut）。
+function _revRestockInv(pid,status,qty){
+  let inv=gI(); let it=inv.find(x=>x.productId===pid);
+  if(!it)return;
+  it[status]=Math.max(0,(it[status]||0)-qty);
+  if(status==='inStock')it.totalIn=Math.max(0,(it.totalIn||0)-qty);
+  S.set(K.I,inv);
+}
+function delRestock(id){
+  const r=gR().find(x=>x.id===id); if(!r)return;
+  if(!confirm(`確定刪除此補貨記錄？\n\n${r.productName||r.productId} × ${r.qty}（${statusLabel(r.status)}）\n\n刪除後將依目前狀態自動扣回「${statusLabel(r.status)}」欄位的庫存數量。`))return;
+  _revRestockInv(r.productId,r.status,r.qty||0);
+  S.set(K.R,gR().filter(x=>x.id!==id));
+  renderRestocks();
+  _sbBanner('🗑 已刪除補貨記錄並扣回庫存',true);
+}
 
 // ═══════════════════════════════════════════════
 // INVENTORY
@@ -1506,7 +1690,7 @@ function renderInv(){
     <td style="font-size:12px;color:var(--ok)">${fn(it.totalIn||0)}</td>
     <td style="font-size:12px;color:var(--acc)">${fn(it.totalOut||0)}</td>
     <td>${stockStatus(it)}</td>
-    <td><button class="btn btn-sm btn-s" onclick="openAdj('${it.id}')">調整</button></td>
+    <td><div style="display:flex;gap:4px;flex-wrap:wrap"><button class="btn btn-sm btn-s" onclick="openAdj('${it.id}')">調整</button><button class="btn btn-sm btn-p" onclick="quickRestock('${it.id}')" title="一鍵開補貨單">📥 補貨</button></div></td>
   </tr>`).join(''):'<tr><td colspan="12" class="empty">無符合結果</td></tr>';
 }
 function openAdj(pid){
@@ -1537,10 +1721,10 @@ function saveAdj(){
 // ═══════════════════════════════════════════════
 function renderStats(){
   let orders=gO();
-  const sp=(document.getElementById('sf-search')?.value||document.getElementById('f-sprod')?.value||'').toLowerCase();
-  const sf=document.getElementById('sf-from')?.value||document.getElementById('f-sfrom')?.value||'';
-  const st2=document.getElementById('sf-to')?.value||document.getElementById('f-sto')?.value||'';
-  const spl=document.getElementById('sf-plat')?.value||document.getElementById('f-splat')?.value||'';
+  const sp=(document.getElementById('sf-search')?.value||'').toLowerCase();
+  const sf=document.getElementById('sf-from')?.value||'';
+  const st2=document.getElementById('sf-to')?.value||'';
+  const spl=document.getElementById('sf-plat')?.value||'';
   if(sp)orders=orders.filter(o=>(o.productName||'').toLowerCase().includes(sp)||(o.productId||'').toLowerCase().includes(sp));
   if(sf)orders=orders.filter(o=>o.date&&o.date>=sf);
   if(st2)orders=orders.filter(o=>o.date&&o.date<=st2);
@@ -1549,9 +1733,8 @@ function renderStats(){
   document.getElementById('s-qty').textContent=fn(orders.reduce((s,o)=>s+(o.qty||0),0));
   const rev=orders.reduce((s,o)=>s+(o.subtotal||0),0);
   document.getElementById('s-rev').textContent=rev>0?'$'+fn(rev):'—';
-  document.getElementById('s-detail-title').textContent=`出貨明細（共 ${orders.length} 筆）`;
-  const sorted=[...orders].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  document.getElementById('s-tbody').innerHTML=sorted.length>0?sorted.map((o,i)=>`<tr><td style="font-size:11px;color:var(--gray)">${sorted.length-i}</td><td>${fd(o.date)}</td><td>${platBadge(o.platform)}</td><td><strong>${o.productName||o.productId}</strong></td><td>${o.qty}</td><td>${o.unitPrice?'$'+fn(o.unitPrice):'<span style="color:var(--gray)">—</span>'}</td><td>${o.subtotal?`<strong>$${fn(o.subtotal)}</strong>`:'<span style="color:var(--gray)">—</span>'}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">無符合條件的記錄</td></tr>';
+  const pendingCnt=orders.filter(o=>(o.status||'shipped')==='pending').length;
+  const sp2=document.getElementById('s-pending'); if(sp2)sp2.textContent=fn(pendingCnt);
 }
 
 // ═══════════════════════════════════════════════
@@ -1565,14 +1748,20 @@ function renderProducts(){
   if(cat)prods=prods.filter(p=>p.category===cat);
   document.getElementById('p-count').textContent=`共 ${prods.length} 項商品`;
   const costs=gCosts();
+  const CI='width:80px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;text-align:center';
   document.getElementById('p-tbody').innerHTML=prods.length>0?prods.map(p=>{
-    const dp=costs[p.id]?.defaultPrice||0;
+    const cost=costs[p.id]||{unitCost:0,defaultPrice:0};
+    const refPrice=cost.defaultPrice||0;
+    const margin=refPrice>0?Math.round((refPrice-(cost.unitCost||0))/refPrice*100):0;
     const chk=_selectedProds.has(p.id)?'checked':'';
     return`<tr>
       <td><input type="checkbox" class="p-check" value="${p.id}" ${chk} onchange="onProdCheck(this)" style="cursor:pointer"></td>
-      <td style="font-size:11px;color:var(--gray)">${p.id}</td><td><strong>${p.name}</strong></td><td style="font-size:11px;color:var(--gray)">${p.category||'—'}</td><td>${dp?'$'+fn(dp):'<span style="color:var(--gray)">—</span>'}</td><td style="color:#3B82F6">${p.safetyStock||'—'}</td>
-      <td><button class="btn btn-sm btn-s" onclick="editProd('${p.id}')">編輯</button><button class="btn btn-sm" style="color:var(--err);border:none;background:none;cursor:pointer;font-weight:600;font-size:12px" onclick="delProd('${p.id}')">刪除</button></td></tr>`;
-  }).join(''):'<tr><td colspan="7" class="empty">尚無商品</td></tr>';
+      <td style="font-size:11px;color:var(--gray)">${p.id}</td><td><strong>${p.name}</strong></td><td style="font-size:11px;color:var(--gray)">${p.category||'—'}</td><td style="color:#3B82F6">${p.safetyStock||'—'}</td>
+      <td><input type="number" data-pid="${p.id}" data-field="unitCost" value="${cost.unitCost||0}" min="0" style="${CI}" oninput="updateMarginPreview('${p.id}')"></td>
+      <td><input type="number" data-pid="${p.id}" data-field="defaultPrice" value="${cost.defaultPrice||0}" min="0" style="${CI}" oninput="updateMarginPreview('${p.id}')"></td>
+      <td id="margin-${p.id}" style="font-weight:700;color:${margin>=30?'var(--ok)':margin>0?'var(--warn)':'var(--err)'}">${margin}%</td>
+      <td style="white-space:nowrap"><button class="btn btn-sm btn-s" onclick="editProd('${p.id}')">編輯</button><button class="btn btn-sm" style="color:var(--err);border:none;background:none;cursor:pointer;font-weight:600;font-size:12px" onclick="delProd('${p.id}')">刪除</button></td></tr>`;
+  }).join(''):'<tr><td colspan="9" class="empty">尚無商品</td></tr>';
   updateBulkBar();
   renderPlatTags();
 }
@@ -1714,17 +1903,6 @@ function fillEditOrderFees(){
   document.getElementById('eo-comm').value=fees.comm||0;
   document.getElementById('eo-fee').value=fees.fixed||0;
   document.getElementById('eo-shipfee').value=fees.shipping||0;
-  calcEditSub();
-}
-function fillEditPrice(){
-  const plat=document.getElementById('eo-plat')?.value||'';
-  const pid=document.getElementById('eo-prod')?.value||'';
-  if(!pid)return;
-  const p=gP().find(x=>x.id===pid);
-  if(!p)return;
-  const k=platKey(plat);
-  const pr=(k&&p.prices&&p.prices[k])||gCosts()[pid]?.defaultPrice||0;
-  if(pr>0)document.getElementById('eo-price').value=pr;
   calcEditSub();
 }
 function calcEditSub(){
@@ -1912,52 +2090,6 @@ function exportListing(){
 // ═══════════════════════════════════════════════
 // PRODUCT COSTS
 // ═══════════════════════════════════════════════
-function renderCosts(){
-  const prods=gP(); const costs=gCosts(); const pos=gPOs(); const inv=gI();
-  const ivMap={};inv.forEach(i=>ivMap[i.productId]=i);
-  // Cost table
-  const tbody=document.getElementById('cost-tbody');
-  if(tbody){
-    tbody.innerHTML=prods.length>0?prods.map(p=>{
-      const cost=costs[p.id]||{unitCost:0,defaultPrice:0};
-      const iv=ivMap[p.id]||{inStock:0};
-      const refPrice=cost.defaultPrice||0;
-      const margin=refPrice>0?Math.round((refPrice-cost.unitCost)/refPrice*100):0;
-      return`<tr>
-        <td style="font-size:11px;color:var(--gray)">${p.id}</td>
-        <td><strong>${p.name}</strong></td>
-        <td style="font-size:12px">${p.category||'—'}</td>
-        <td style="font-weight:700;color:${iv.inStock<=0?'var(--err)':'var(--ok)'}">${iv.inStock||0}</td>
-        <td><input type="number" data-pid="${p.id}" data-field="unitCost" value="${cost.unitCost||0}" min="0" style="width:80px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;text-align:center" oninput="updateMarginPreview('${p.id}')"></td>
-        <td><input type="number" data-pid="${p.id}" data-field="defaultPrice" value="${cost.defaultPrice||0}" min="0" style="width:80px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;text-align:center" oninput="updateMarginPreview('${p.id}')"></td>
-        <td id="margin-${p.id}" style="font-weight:700;color:${margin>=30?'var(--ok)':margin>0?'var(--warn)':'var(--err)'}">${margin}%</td>
-      </tr>`;
-    }).join(''):'<tr><td colspan="7" class="empty">尚無商品</td></tr>';
-  }
-  // PO table
-  const poCount=document.getElementById('po-count');
-  if(poCount)poCount.textContent=`訂貨記錄（共 ${pos.length} 筆）`;
-  const poTbody=document.getElementById('po-tbody');
-  if(poTbody){
-    const sortedPOs=[...pos].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    poTbody.innerHTML=sortedPOs.length>0?sortedPOs.map((po,i)=>`<tr>
-      <td style="font-size:11px;color:var(--gray)">${sortedPOs.length-i}</td>
-      <td>${fd(po.date)}</td>
-      <td><strong>${po.productName||po.productId}</strong></td>
-      <td style="font-weight:700;color:var(--ok)">${po.qty}</td>
-      <td>$${fn(po.unitCost)}</td>
-      <td style="font-weight:700">$${fn(po.total)}</td>
-      <td style="font-size:12px">${po.notes||'—'}</td>
-      <td><button class="btn btn-sm btn-s" style="color:var(--err);border-color:var(--err)" onclick="deletePO('${po.id}')">刪</button></td>
-    </tr>`).join(''):'<tr><td colspan="8" class="empty">尚無訂貨記錄</td></tr>';
-  }
-  // Calc-plat
-  const cp=document.getElementById('calc-plat');
-  if(cp)cp.innerHTML='<option value="">— 選擇平台 —</option>'+gPlats().map(p=>`<option>${p}</option>`).join('');
-  // Calc-prod checkboxes
-  const cpgrid=document.getElementById('calc-prod-grid');
-  if(cpgrid)cpgrid.innerHTML=gP().map(p=>`<label class="calc-cb-item"><input type="checkbox" class="calc-cb" value="${p.id}"> ${p.name}</label>`).join('');
-}
 function updateMarginPreview(pid){
   const cost=+(document.querySelector(`[data-pid="${pid}"][data-field="unitCost"]`)?.value)||0;
   const sale=+(document.querySelector(`[data-pid="${pid}"][data-field="defaultPrice"]`)?.value)||0;
@@ -1972,28 +2104,7 @@ function saveAllCosts(){
     const dp=+(document.querySelector(`[data-pid="${p.id}"][data-field="defaultPrice"]`)?.value)||0;
     costs[p.id]={unitCost:c,defaultPrice:dp};
   });
-  S.set(K.COSTS,costs); alert('✅ 成本設定已儲存！'); renderCosts();
-}
-function calcPOTotal(){
-  const qty=+(document.getElementById('po-qty')?.value)||0;
-  const cost=+(document.getElementById('po-cost')?.value)||0;
-  const total=document.getElementById('po-total');
-  if(total)total.textContent='$'+fn(qty*cost);
-}
-function savePO(){
-  const date=document.getElementById('po-date').value;
-  const pid=document.getElementById('po-prod').value;
-  const qty=+(document.getElementById('po-qty').value)||0;
-  const unitCost=+(document.getElementById('po-cost').value)||0;
-  if(!date||!pid||!qty){alert('請填寫日期、商品和數量');return;}
-  const p=gP().find(x=>x.id===pid);
-  const po={id:uid(),date,productId:pid,productName:p?.name||pid,qty,unitCost,total:qty*unitCost,notes:document.getElementById('po-note').value};
-  const pos=gPOs(); pos.push(po); S.set(K.POS,pos);
-  closeM('m-newpo'); renderCosts(); alert(`✅ 訂貨記錄已新增：${p?.name||pid} × ${qty}`);
-}
-function deletePO(id){
-  if(!confirm('確定刪除此訂貨記錄？'))return;
-  S.set(K.POS,gPOs().filter(p=>p.id!==id)); renderCosts();
+  S.set(K.COSTS,costs); alert('✅ 成本／售價已儲存！'); renderProducts();
 }
 function fillCalcFees(){
   const plat=document.getElementById('calc-plat')?.value||'';
@@ -2026,12 +2137,6 @@ function runCalc(){
   const npEl=document.getElementById('cr-np'); npEl.textContent='$'+fn(netProfit); npEl.className='cr-val'+(netProfit>=0?' pos':' neg');
   document.getElementById('calc-results').style.display='grid';
 }
-function exportPOs(){
-  const pos=gPOs();
-  const rows=[['日期','商品編號','商品名稱','數量','單位成本','總支出','備註'],...pos.map(p=>[p.date,p.productId,p.productName,p.qty,p.unitCost,p.total,p.notes||''])];
-  toXLSX([[rows,'訂貨記錄']],`2is_訂貨_${new Date().toISOString().slice(0,10)}.xlsx`);
-}
-
 // GOOGLE DRIVE SYNC
 // ═══════════════════════════════════════════════
 const DRIVE_FILENAME = '2is_inventory_data.json';
@@ -2090,7 +2195,6 @@ function _collectAll(){
     platFees:   gPF(),
     listing:    gListing(),
     costs:      gCosts(),
-    pos:        gPOs(),
     savedAt:    new Date().toISOString(),
     version:    '5.0'
   };
@@ -2196,7 +2300,6 @@ async function pullFromDrive(){
     if(data.platFees)  S.set(K.PFEES, data.platFees);
     if(data.listing)   S.set(K.LISTING, data.listing);
     if(data.costs)     S.set(K.COSTS, data.costs);
-    if(data.pos)       S.set(K.POS, data.pos);
     S.set(K.SD, 1);
     const ts = new Date().toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
     S.set('iis2_drvsync', ts);
@@ -2703,18 +2806,31 @@ function openReturnM(){
   document.getElementById('ret-items-rows').innerHTML='';
   addRetItem('ret-items-rows');
   document.getElementById('ret-pkg-checks').innerHTML='<span style="font-size:11px;color:var(--gray)">請先選擇商品</span>';
+  // 清除訂單關聯（手動建退貨時無關聯）
+  document.getElementById('ret-order-id').value='';
+  const lk=document.getElementById('ret-order-link'); if(lk){lk.style.display='none';lk.innerHTML='';}
   openM('m-return');
   setTimeout(updateReturnPreview,80);
 }
-function fillReturnPrice(){
-  const plat=document.getElementById('ret-plat').value;
-  const pid=document.getElementById('ret-prod').value;
-  const p=gP().find(x=>x.id===pid); const k=platKey(plat);
-  if(p&&k&&p.prices){const pr=p.prices[k]||0;if(pr>0)document.getElementById('ret-refund').value=pr;}
-  // 載入包裝品（退貨時預設勾選同樣的包裝品以便回補）
-  if(p)loadPkgChecks(p.category||'','ret-pkg-checks');
-  else{const el=document.getElementById('ret-pkg-checks');if(el)el.innerHTML='<span style="font-size:11px;color:var(--gray)">請先選擇商品</span>';}
-  updateReturnPreview();
+// 從出貨單建退貨：帶入平台、日期與商品明細，並寫入關聯單號
+function openReturnFromOrder(orderId){
+  const o=gO().find(x=>x.id===orderId); if(!o)return;
+  fillDrops();
+  refreshPlatDropdowns();
+  document.getElementById('ret-date').value=o.date||new Date().toISOString().split('T')[0];
+  document.getElementById('ret-plat').value=o.platform||'';
+  const items=o.items&&o.items.length?o.items:[{productId:o.productId,productName:o.productName,qty:o.qty||1}];
+  renderRetItemRows('ret-items-rows',items.map(it=>({productId:it.productId,qty:it.qty||1})));
+  // 包裝品：依原單第一項商品分類帶入預設
+  const firstProd=gP().find(p=>p.id===items[0]?.productId);
+  if(firstProd)loadPkgChecks(firstProd.category||'','ret-pkg-checks');
+  else document.getElementById('ret-pkg-checks').innerHTML='<span style="font-size:11px;color:var(--gray)">請先選擇商品</span>';
+  document.getElementById('ret-refund').value=o.subtotal||0;
+  document.getElementById('ret-order-id').value=o.id;
+  const lk=document.getElementById('ret-order-link');
+  if(lk){lk.style.display='block';lk.innerHTML=`🔗 關聯出貨單：${fd(o.date)}｜${o.platform||'—'}｜${o.orderId?('單號 '+o.orderId):('#'+o.id.slice(0,8))}`;}
+  openM('m-return');
+  setTimeout(updateReturnPreview,80);
 }
 function updateReturnPreview(){
   const retItems=getRetItems('ret-items-rows');
@@ -2732,11 +2848,11 @@ function updateReturnPreview(){
 }
 function renderReturns(){
   let rets=gRT();
-  const s=(document.getElementById('sf-search')?.value||document.getElementById('f-rtsearch')?.value||'').toLowerCase();
-  const df=document.getElementById('sf-from')?.value||document.getElementById('f-rtmonth')?.value||'';
+  const s=(document.getElementById('sf-search')?.value||'').toLowerCase();
+  const df=document.getElementById('sf-from')?.value||'';
   const dt=document.getElementById('sf-to')?.value||'';
-  const pl=document.getElementById('sf-plat')?.value||document.getElementById('f-rtplat')?.value||'';
-  const cond=document.getElementById('sf-rtcond')?.value||document.getElementById('f-rtcond')?.value||'';
+  const pl=document.getElementById('sf-plat')?.value||'';
+  const cond=document.getElementById('sf-rtcond')?.value||'';
   if(s)rets=rets.filter(r=>(r.productName||'').toLowerCase().includes(s)||(r.productId||'').toLowerCase().includes(s));
   if(df)rets=rets.filter(r=>r.date&&r.date>=df);
   if(dt)rets=rets.filter(r=>r.date&&r.date<=dt);
@@ -2751,14 +2867,21 @@ function renderReturns(){
   document.getElementById('rt-s-qty').textContent=fn(totalQty);
   document.getElementById('rt-s-good').textContent=fn(goodQty);
   document.getElementById('rt-s-ng').textContent=fn(ngQty);
+  const _allOrders=gO();
   document.getElementById('rt-tbody').innerHTML=rets.length>0?rets.map((r,i)=>{
     const condBadge=r.condition==='good'
       ?'<span class="b" style="background:#D1FAE5;color:#065F46">✅ 良品回收</span>'
       :'<span class="b" style="background:#FEE2E2;color:#991B1B">⚠ NG品</span>';
+    let linkCell='<span style="color:var(--gray)">—</span>';
+    if(r.orderId){
+      const lo=_allOrders.find(x=>x.id===r.orderId);
+      linkCell=lo?`${fd(lo.date)}<br><span style="color:var(--gray)">${lo.orderId||('#'+lo.id.slice(0,8))}</span>`:`#${(r.orderId+'').slice(0,8)}`;
+    }
     return`<tr>
       <td style="font-size:11px;color:var(--gray)">${rets.length-i}</td>
       <td>${fd(r.date)}</td>
       <td>${platBadge(r.platform)}</td>
+      <td style="font-size:11px">${linkCell}</td>
       <td><strong>${r.productName||r.productId}</strong><br><span style="font-size:11px;color:var(--gray)">${r.productId}</span></td>
       <td style="font-weight:700;color:#DB2777">-${r.qty}</td>
       <td>${condBadge}</td>
@@ -2770,7 +2893,7 @@ function renderReturns(){
         <button class="btn btn-sm btn-s" style="color:var(--err);border-color:var(--err)" onclick="delReturn('${r.id}')">刪</button>
       </td>
     </tr>`;
-  }).join(''):'<tr><td colspan="9" class="empty">尚無退貨記錄</td></tr>';
+  }).join(''):'<tr><td colspan="10" class="empty">尚無退貨記錄</td></tr>';
 }
 function saveReturn(){
   const date=document.getElementById('ret-date').value;
@@ -2785,7 +2908,8 @@ function saveReturn(){
   const notes=document.getElementById('ret-note').value;
   const pkgList=getCheckedPkg('ret-pkg-checks');
   const first=items[0];
-  const rec={id:uid(),date,platform,productId:first.productId,productName:first.productName,qty:totalQty,condition,refundAmount,reason,notes,packaging:pkgList,items};
+  const linkedOrderId=document.getElementById('ret-order-id')?.value||null;
+  const rec={id:uid(),date,platform,orderId:linkedOrderId,productId:first.productId,productName:first.productName,qty:totalQty,condition,refundAmount,reason,notes,packaging:pkgList,items};
   const rets=gRT(); rets.push(rec); S.set(K.RT,rets);
   items.forEach(it=>{
     if(condition==='good')updInvStatus(it.productId,'inStock',it.qty);
@@ -2840,16 +2964,20 @@ function toXLSX(sheets,filename){
 }
 function exportOrders(){
   let orders=gO();
-  const s=document.getElementById('f-osearch')?.value.toLowerCase()||'';
-  const m=document.getElementById('f-omonth')?.value||'';
-  const pl=document.getElementById('f-oplat')?.value||'';
-  if(s)orders=orders.filter(o=>(o.productName||'').toLowerCase().includes(s)||(o.productId||'').toLowerCase().includes(s));
-  if(m)orders=orders.filter(o=>o.date&&o.date.startsWith(m));
+  const s=(document.getElementById('sf-search')?.value||'').toLowerCase();
+  const df=document.getElementById('sf-from')?.value||'';
+  const dt=document.getElementById('sf-to')?.value||'';
+  const pl=document.getElementById('sf-plat')?.value||'';
+  const ost=document.getElementById('sf-ostatus')?.value||'';
+  if(s)orders=orders.filter(o=>(o.productName||'').toLowerCase().includes(s)||(o.productId||'').toLowerCase().includes(s)||(o.orderId||'').toLowerCase().includes(s));
+  if(df)orders=orders.filter(o=>o.date&&o.date>=df);
+  if(dt)orders=orders.filter(o=>o.date&&o.date<=dt);
   if(pl)orders=orders.filter(o=>o.platform===pl);
-  toXLSX([[orders.map(o=>({'日期':o.date,'訂單編號':o.orderId||'','平台':o.platform||'','商品編號':o.productId,'商品名稱':o.productName,'數量':o.qty,'單價':o.unitPrice||'','折扣%':o.discount||100,'小計':o.subtotal||'','備註':o.notes||''})),'出貨記錄']],`2is_出貨_${new Date().toISOString().slice(0,10)}.xlsx`);
+  if(ost)orders=orders.filter(o=>(o.status||'shipped')===ost);
+  toXLSX([[orders.map(o=>({'日期':o.date,'訂單編號':o.orderId||'','平台':o.platform||'','狀態':(o.status||'shipped')==='pending'?'待出貨':'已出貨','商品編號':o.productId,'商品名稱':o.productName,'數量':o.qty,'單價':o.unitPrice||'','折扣%':o.discount||100,'小計':o.subtotal||'','備註':o.notes||''})),'出貨記錄']],`2is_出貨_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 function exportRestocks(){
-  toXLSX([[gR().map(r=>({'日期':r.date,'商品編號':r.productId,'商品名稱':r.productName,'進貨數量':r.qty,'入庫狀態':statusLabel(r.status),'備註':r.notes||''})),'進貨記錄']],`2is_進貨_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toXLSX([[gR().map(r=>({'日期':r.date,'商品編號':r.productId,'商品名稱':r.productName,'補貨數量':r.qty,'單位成本':r.unitCost||0,'總支出':r.total||0,'入庫狀態':statusLabel(r.status),'備註':r.notes||''})),'補貨記錄']],`2is_補貨_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 function exportInventory(){
   const prods=gP();const inv=gI();const costs=gCosts();
@@ -2896,21 +3024,29 @@ function exportStats(){
 function globalSearch(e){
   if(e.key && e.key!=='Enter') return;
   const q=(document.getElementById('global-search').value||'').trim();
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const navItem=document.querySelector('.nav-item[data-page="inventory"]');
-  if(navItem)navItem.classList.add('active');
-  document.getElementById('page-inventory').classList.add('active');
-  const f=document.getElementById('f-isearch'); if(f)f.value=q;
-  renderInv();
-  document.querySelector('.sidebar').classList.remove('open');
-  const bd=document.getElementById('menuBackdrop'); if(bd)bd.classList.remove('show');
+  const ql=q.toLowerCase();
+  // 商品命中優先（維持現行：跳庫存頁）
+  const prodHit=q&&gP().some(p=>(p.name||'').toLowerCase().includes(ql)||(p.id||'').toLowerCase().includes(ql));
+  // 訂單命中（orderId 或訂單 id，不分大小寫、含部分匹配）
+  const orderHit=q&&gO().some(o=>(o.orderId||'').toLowerCase().includes(ql)||(o.id||'').toLowerCase().includes(ql));
+  if(!prodHit&&orderHit){
+    gotoPage('sales',()=>{
+      _activateSubTab('st-orders');
+      const sf=document.getElementById('sf-search'); if(sf)sf.value=q;
+      renderOrders();
+    });
+    return;
+  }
+  gotoPage('inventory',()=>{
+    const f=document.getElementById('f-isearch'); if(f)f.value=q;
+    renderInv();
+  });
 }
 function confirmReset(){
   if(!confirm('⚠ 第 1 步：確定要重設「所有」資料嗎？\n\n這會清空商品、庫存、出貨、退貨、進貨、成本、損益等全部記錄，無法還原。\n\n建議先用側欄「☁ 儲存」備份到 Google Drive。'))return;
   const ans=prompt('⚠ 第 2 步：最終確認。\n\n請輸入「RESET」（大寫）以執行重設，留空或取消則不動作：');
   if(ans!=='RESET'){ alert('已取消，資料未變動。'); return; }
-  [K.P,K.I,K.O,K.R,K.RT,K.SD,K.PLAT,K.PFEES,K.LISTING,K.COSTS,K.POS,K.SHIP,K.PKGDEF,K.FIN].forEach(k=>{try{localStorage.removeItem(k);}catch{}});
+  [K.P,K.I,K.O,K.R,K.RT,K.SD,K.PLAT,K.PFEES,K.LISTING,K.COSTS,K.SHIP,K.PKGDEF,K.FIN].forEach(k=>{try{localStorage.removeItem(k);}catch{}});
   location.reload();
 }
 
@@ -2940,11 +3076,23 @@ function _buildMonthlyRev(){
   });
   return map;
 }
+// 依補貨日期月份加總 total 欄位  {YYYY-MM: 補貨支出}
+// 直接用紀錄的 total 欄位（total=0 就加 0，不用 qty×unitCost 重算）
+function _buildMonthlyRestockExp(){
+  const map={};
+  gR().forEach(r=>{
+    if(!r.date)return;
+    const m=r.date.slice(0,7);
+    map[m]=(map[m]||0)+(r.total||0);
+  });
+  return map;
+}
 function renderFinance(){
   const finData=gFin();
   const revMap=_buildMonthlyRev();
+  const rsExpMap=_buildMonthlyRestockExp();
   // Collect all months that have orders or saved expense data
-  const allMonths=new Set([...Object.keys(revMap),...Object.keys(finData)]);
+  const allMonths=new Set([...Object.keys(revMap),...Object.keys(finData),...Object.keys(rsExpMap)]);
   // Populate year selector（含使用者手動新增的年份）
   const extraYears=S.get('iis2_finyears')||[];
   const thisYear=new Date().getFullYear().toString();
@@ -2962,7 +3110,8 @@ function renderFinance(){
   tbody.innerHTML=months.map(m=>{
     const rev=Math.round(revMap[m]||0);
     const items=(finData[m]?.items)||[];
-    const expTotal=items.reduce((s,x)=>s+(x.amt||0),0);
+    const rsExp=Math.round(rsExpMap[m]||0); // 自動補貨支出
+    const expTotal=items.reduce((s,x)=>s+(x.amt||0),0)+rsExp;
     const surplus=rev-expTotal;
     const surplusCls=surplus>=0?'color:#10B981;font-weight:800':'color:#EF4444;font-weight:800';
     totRev+=rev; totExp+=expTotal; totNet+=surplus;
@@ -2995,6 +3144,14 @@ function openExpEditor(month){
   container.innerHTML='';
   if(items.length===0){addExpRow();}
   else{items.forEach(it=>addExpRow(it.name,it.amt));}
+  // 自動補貨支出（唯讀，不寫入 finance_expenses）
+  const rsExp=Math.round(_buildMonthlyRestockExp()[month]||0);
+  const autoEl=document.getElementById('fexp-auto');
+  if(autoEl){
+    autoEl.dataset.amt=rsExp;
+    autoEl.style.display=rsExp>0?'flex':'none';
+    const av=document.getElementById('fexp-auto-val'); if(av)av.textContent='$'+fn(rsExp);
+  }
   calcExpTotal();
   openM('m-finance-exp');
 }
@@ -3013,6 +3170,7 @@ function calcExpTotal(){
     const amt=+(row.querySelectorAll('input')[1]?.value)||0;
     t+=amt;
   });
+  t+=+(document.getElementById('fexp-auto')?.dataset.amt)||0; // 加上自動補貨支出
   const el=document.getElementById('fexp-total'); if(el)el.textContent='$'+fn(t);
 }
 function saveExpenses(){
@@ -3031,14 +3189,16 @@ function saveExpenses(){
   renderFinance();
 }
 function exportFinance(){
-  const finData=gFin(); const revMap=_buildMonthlyRev();
+  const finData=gFin(); const revMap=_buildMonthlyRev(); const rsExpMap=_buildMonthlyRestockExp();
   const ySel=document.getElementById('fin-year'); const year=ySel?.value||new Date().getFullYear().toString();
   const rows=Array.from({length:12},(_,i)=>{
     const m=`${year}-${String(i+1).padStart(2,'0')}`;
     const rev=Math.round(revMap[m]||0);
     const items=(finData[m]?.items)||[];
-    const exp=items.reduce((s,x)=>s+(x.amt||0),0);
-    return{'月份':m,'出貨實收':rev,'支出明細':items.map(x=>`${x.name}:${x.amt}`).join('；'),'總支出':exp,'營餘':rev-exp};
+    const rsExp=Math.round(rsExpMap[m]||0);
+    const exp=items.reduce((s,x)=>s+(x.amt||0),0)+rsExp;
+    const detail=items.map(x=>`${x.name}:${x.amt}`).concat(rsExp>0?[`補貨支出（自動）:${rsExp}`]:[]).join('；');
+    return{'月份':m,'出貨實收':rev,'支出明細':detail,'總支出':exp,'營餘':rev-exp};
   });
   toXLSX([[rows,`${year}年損益`]],`2is_月損益_${year}.xlsx`);
 }
@@ -3262,7 +3422,7 @@ async function manualBackup(){
   const btn=document.getElementById('_backupBtn'); const old=btn?btn.textContent:'';
   try{
     if(btn){btn.textContent='備份中…';btn.disabled=true;}
-    const tables=['products','inventory','orders','order_items','restocks','returns','purchase_orders','costs','platforms','platform_fees','listings','shipping_methods','packaging_defaults','finance_expenses','app_settings'];
+    const tables=['products','inventory','orders','order_items','restocks','returns','costs','platforms','platform_fees','listings','shipping_methods','packaging_defaults','finance_expenses','app_settings'];
     const out={meta:{savedAt:new Date().toISOString(),source:SUPABASE_URL,by:'manual'},tables:{}}; let total=0;
     for(const t of tables){ const {data,error}=await sb.from(t).select('*'); if(error) throw error; out.tables[t]=data||[]; total+=(data||[]).length; }
     const blob=new Blob([JSON.stringify(out,null,1)],{type:'application/json'});
@@ -3317,9 +3477,11 @@ window.onload=_boot;
 <div class="mbg" id="m-return">
 <div class="modal">
   <div class="mhdr"><h3>↩️ 新增退貨記錄</h3><button class="mclose" onclick="closeM('m-return')">✕</button></div>
+  <input type="hidden" id="ret-order-id">
+  <div id="ret-order-link" style="display:none;margin-bottom:12px;padding:8px 12px;background:#EFF5FD;border-radius:8px;font-size:12px;color:var(--gray)"></div>
   <div class="fgrid">
     <div class="form-g"><label>退貨日期 *</label><input type="date" id="ret-date"></div>
-    <div class="form-g"><label>銷售平台 *</label><select id="ret-plat" onchange="fillReturnPrice()"></select></div>
+    <div class="form-g"><label>銷售平台 *</label><select id="ret-plat" onchange="updateReturnPreview()"></select></div>
   </div>
   <div style="margin-top:12px">
     <div style="display:grid;grid-template-columns:1fr 80px 28px;gap:6px;font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;padding:0 2px;margin-bottom:4px">
@@ -3536,30 +3698,6 @@ window.onload=_boot;
 </div>
 </div>
 
-<!-- New Purchase Order -->
-<div class="mbg" id="m-newpo">
-<div class="modal">
-  <div class="mhdr"><h3>📋 新增訂貨記錄</h3><button class="mclose" onclick="closeM('m-newpo')">✕</button></div>
-  <div class="fgrid">
-    <div class="form-g"><label>訂貨日期 *</label><input type="date" id="po-date"></div>
-    <div class="form-g"><label>商品 *</label><select id="po-prod"><option value="">— 選擇商品 —</option></select></div>
-  </div>
-  <div class="fgrid" style="margin-top:12px">
-    <div class="form-g"><label>訂貨數量 *</label><input type="number" id="po-qty" value="1" min="1" oninput="calcPOTotal()"></div>
-    <div class="form-g"><label>單位成本 (TWD)</label><input type="number" id="po-cost" value="0" min="0" oninput="calcPOTotal()"></div>
-  </div>
-  <div class="fgrid" style="margin-top:12px">
-    <div class="form-g"><label>總支出</label><div id="po-total" style="padding:9px 10px;background:#EFF5FD;border-radius:7px;font-weight:700">—</div></div>
-    <div class="form-g"><label>備註</label><input type="text" id="po-note" placeholder="供應商、訂單號…"></div>
-  </div>
-  <div style="margin-top:12px;font-size:12px;color:var(--gray)">💡 儲存後會自動更新該商品的成本設定。</div>
-  <div class="mfoot">
-    <button class="btn btn-s" onclick="closeM('m-newpo')">取消</button>
-    <button class="btn btn-p" onclick="savePO()">確認新增</button>
-  </div>
-</div>
-</div>
-
 <!-- LINE Sync Modal -->
 <div class="mbg" id="m-line-sync">
 <div class="modal" style="max-width:620px">
@@ -3760,6 +3898,7 @@ async function importLineOrders(){
       shippingMethod: row.shipping || '',
       notes: row.note || 'LINE同步',
       source: 'LINE',
+      status: 'shipped', // Sheet 同步為歷史出貨記錄，視為已出貨
     };
     orders.push(newOrder);
 
