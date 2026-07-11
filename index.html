@@ -879,7 +879,7 @@ async function _replaceAll(table,keyCol,isText,rows){
   if(rows.length){ const {error:e2}=await sb.from(table).insert(rows); if(e2)throw e2; }
 }
 async function _doPersist(k,v){
-  if(k==='iis2_p'){ return _delDiff('products','id',(v||[]).map(p=>({id:p.id,name:p.name,category:p.category||'其他',safety_stock:p.safetyStock||5,prices:p.prices||{},is_packaging:!!p.isPackaging}))); }
+  if(k==='iis2_p'){ return _delDiff('products','id',(v||[]).map(p=>({id:p.id,name:p.name,category:p.category||'其他',safety_stock:p.safetyStock||5,prices:p.prices||{},is_packaging:!!p.isPackaging,discontinued:!!p.discontinued}))); }
   if(k==='iis2_i'){ const rows=(v||[]).map(i=>({product_id:i.productId,ordered:i.ordered||0,pending:i.pending||0,in_stock:i.inStock||0,ng:i.ng||0,scrapped:i.scrapped||0,safety_stock:i.safetyStock||0,total_in:i.totalIn||0,total_out:i.totalOut||0})); if(rows.length){const {error}=await sb.from('inventory').upsert(rows,{onConflict:'product_id'}); if(error)throw error;} return; }
   if(k==='iis2_o'){ return _persistOrders(v||[]); }
   if(k==='iis2_r'){ return _delDiff('restocks','id',(v||[]).map(r=>({id:r.id,date:r.date,product_id:r.productId||null,product_name:r.productName||null,qty:r.qty||0,status:r.status||'inStock',unit_cost:r.unitCost||0,total:r.total||0,notes:r.notes||null}))); }
@@ -914,7 +914,7 @@ async function loadAll(){
     sb.from('packaging_defaults').select('*'), sb.from('finance_expenses').select('*'), sb.from('app_settings').select('*')
   ]);
   for(const x of [p,i,o,oi,r,rt,costs,plat,pfees,listing,ship,pkg,fin,setg]){ if(x.error) throw x.error; }
-  MEM['iis2_p']=(p.data||[]).map(r=>({id:r.id,name:r.name,category:r.category,safetyStock:r.safety_stock,prices:r.prices||{},isPackaging:r.is_packaging}));
+  MEM['iis2_p']=(p.data||[]).map(r=>({id:r.id,name:r.name,category:r.category,safetyStock:r.safety_stock,prices:r.prices||{},isPackaging:r.is_packaging,discontinued:r.discontinued}));
   MEM['_snap_products']=MEM['iis2_p'].map(x=>x.id);
   MEM['iis2_i']=(i.data||[]).map(r=>({productId:r.product_id,ordered:r.ordered,pending:r.pending,inStock:r.in_stock,ng:r.ng,scrapped:r.scrapped,safetyStock:r.safety_stock,totalIn:r.total_in,totalOut:r.total_out}));
   const itemsBy={}; (oi.data||[]).forEach(it=>{(itemsBy[it.order_id]=itemsBy[it.order_id]||[]).push({productId:it.product_id,productName:it.product_name,qty:it.qty,unitPrice:it.unit_price,discount:it.discount,subtotal:it.subtotal});});
@@ -1286,7 +1286,8 @@ function renderDash(){
   const mOrds=orders.filter(o=>o.date&&o.date.startsWith(thisM));
   const mQty=mOrds.reduce((s,o)=>s+(o.qty||0),0);
   const mRev=mOrds.reduce((s,o)=>s+(o.subtotal||0),0);
-  const oos=inv.filter(i=>(i.inStock||0)<=0);
+  const _disc=new Set(prods.filter(p=>p.discontinued).map(p=>p.id));
+  const oos=inv.filter(i=>(i.inStock||0)<=0 && !_disc.has(i.productId));
   const hasOrdered=inv.filter(i=>(i.ordered||0)>0).length;
   const hasPending=inv.filter(i=>(i.pending||0)>0).length;
   const mRets=gRT().filter(r=>r.date&&r.date.startsWith(thisM));
@@ -1677,9 +1678,9 @@ function renderInv(){
   else if(st==='has-ng')items=items.filter(x=>x.ng>0);
   items.sort((a,b)=>{const s=x=>x.inStock<=0?0:(x.safetyStock>0&&x.inStock<x.safetyStock)?1:2;return s(a)-s(b);});
   document.getElementById('i-count').textContent=`共 ${items.length} 項商品`;
-  document.getElementById('i-tbody').innerHTML=items.length>0?items.map(it=>`<tr>
+  document.getElementById('i-tbody').innerHTML=items.length>0?items.map(it=>`<tr style="${it.discontinued?'opacity:.6':''}">
     <td style="font-size:11px;color:var(--gray)">${it.id}</td>
-    <td><strong>${it.name}</strong></td>
+    <td><strong>${it.name}</strong>${it.discontinued?' <span class="b b-out" style="font-size:10px">已停售</span>':''}</td>
     <td style="font-size:11px;color:var(--gray)">${it.category||'—'}</td>
     <td style="font-weight:700;color:${it.ordered>0?'var(--ordered)':'var(--gray)'}">${it.ordered||0}</td>
     <td style="font-weight:700;color:${it.pending>0?'var(--pending)':'var(--gray)'}">${it.pending||0}</td>
@@ -1754,16 +1755,23 @@ function renderProducts(){
     const refPrice=cost.defaultPrice||0;
     const margin=refPrice>0?Math.round((refPrice-(cost.unitCost||0))/refPrice*100):0;
     const chk=_selectedProds.has(p.id)?'checked':'';
-    return`<tr>
+    return`<tr style="${p.discontinued?'opacity:.6;background:#faf1ee':''}">
       <td><input type="checkbox" class="p-check" value="${p.id}" ${chk} onchange="onProdCheck(this)" style="cursor:pointer"></td>
-      <td style="font-size:11px;color:var(--gray)">${p.id}</td><td><strong>${p.name}</strong></td><td style="font-size:11px;color:var(--gray)">${p.category||'—'}</td><td style="color:#3B82F6">${p.safetyStock||'—'}</td>
+      <td style="font-size:11px;color:var(--gray)">${p.id}</td><td><strong>${p.name}</strong>${p.discontinued?' <span class="b b-out" style="font-size:10px">已停售</span>':''}</td><td style="font-size:11px;color:var(--gray)">${p.category||'—'}</td><td style="color:#3B82F6">${p.safetyStock||'—'}</td>
       <td><input type="number" data-pid="${p.id}" data-field="unitCost" value="${cost.unitCost||0}" min="0" style="${CI}" oninput="updateMarginPreview('${p.id}')"></td>
       <td><input type="number" data-pid="${p.id}" data-field="defaultPrice" value="${cost.defaultPrice||0}" min="0" style="${CI}" oninput="updateMarginPreview('${p.id}')"></td>
       <td id="margin-${p.id}" style="font-weight:700;color:${margin>=30?'var(--ok)':margin>0?'var(--warn)':'var(--err)'}">${margin}%</td>
-      <td style="white-space:nowrap"><button class="btn btn-sm btn-s" onclick="editProd('${p.id}')">編輯</button><button class="btn btn-sm" style="color:var(--err);border:none;background:none;cursor:pointer;font-weight:600;font-size:12px" onclick="delProd('${p.id}')">刪除</button></td></tr>`;
+      <td style="white-space:nowrap"><button class="btn btn-sm btn-s" onclick="editProd('${p.id}')">編輯</button><button class="btn btn-sm" style="border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:${p.discontinued?'var(--ok)':'var(--warn)'}" onclick="toggleDiscontinued('${p.id}')">${p.discontinued?'恢復販售':'停售'}</button><button class="btn btn-sm" style="color:var(--err);border:none;background:none;cursor:pointer;font-weight:600;font-size:12px" onclick="delProd('${p.id}')">刪除</button></td></tr>`;
   }).join(''):'<tr><td colspan="9" class="empty">尚無商品</td></tr>';
   updateBulkBar();
   renderPlatTags();
+}
+function toggleDiscontinued(id){
+  const prods=gP(); const p=prods.find(x=>x.id===id); if(!p)return;
+  const to=!p.discontinued;
+  if(!confirm(to?`確定將「${p.name}」設為已停售？\n（停售品不再列入補貨警示；商品、庫存與歷史訂單資料都會保留）`:`確定恢復販售「${p.name}」？`))return;
+  p.discontinued=to; S.set(K.P,prods); renderProducts();
+  _sbBanner(to?`🛑 已停售：${p.name}`:`✅ 已恢復販售：${p.name}`, true);
 }
 function saveProduct(){
   const eid=document.getElementById('pm-eid').value;
@@ -1773,7 +1781,7 @@ function saveProduct(){
   const plats=gPlats();
   const prices={};
   plats.slice(0,8).forEach(p=>{const k=platKey(p);const el=document.getElementById('pp-'+k);if(el)prices[k]=+(el.value)||0;});
-  const prod={id,name,category:document.getElementById('pm-cat').value.trim(),safetyStock:+(document.getElementById('pm-safe').value)||5,prices,isPackaging:document.getElementById('pm-is-pkg').checked};
+  const prod={id,name,category:document.getElementById('pm-cat').value.trim(),safetyStock:+(document.getElementById('pm-safe').value)||5,prices,isPackaging:document.getElementById('pm-is-pkg').checked,discontinued:eid?(gP().find(p=>p.id===eid)?.discontinued||false):false};
   const dpVal=+(document.getElementById('pm-default-price').value)||0;
   let prods=gP();
   if(eid){prods=prods.map(p=>p.id===eid?prod:p);}
@@ -2988,7 +2996,7 @@ function exportInventory(){
     const cost=c.unitCost||0, price=c.defaultPrice||0;
     const status = stock<=0?'缺貨' : (stock<ss?'低於安全庫存':'正常');
     const margin = price>0 ? Math.round((price-cost)/price*1000)/10 : '';
-    return {'商品編號':p.id,'商品名稱':p.name,'分類':p.category,'包裝品':p.isPackaging?'是':'',
+    return {'商品編號':p.id,'商品名稱':p.name,'分類':p.category,'包裝品':p.isPackaging?'是':'','停售':p.discontinued?'是':'',
       '已訂貨':i.ordered||0,'待整理':i.pending||0,'庫存(可售)':stock,'NG數':i.ng||0,'報廢':i.scrapped||0,
       '安全庫存':ss,'庫存狀態':status,'總進貨':i.totalIn||0,'總出貨':i.totalOut||0,
       '單位成本':cost,'預設售價':price,'毛利率%':margin,'庫存成本總值':stock*cost};
