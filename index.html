@@ -71,6 +71,8 @@ h1,h2,h3,.disp{font-family:'Comfortaa','Huninn','Poppins','PingFang TC','Noto Sa
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead{position:sticky;top:0;background:#EFF5FD;z-index:2}
 th{padding:9px 12px;text-align:left;font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--acc);background:#E4EEFB}
 td{padding:8px 12px;border-bottom:1px solid #E3ECF7;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#F4F8FD}
@@ -427,13 +429,19 @@ tr:hover td{background:#F4F8FD}
   <div class="card">
     <div class="card-hdr"><h3 id="i-count">庫存品項</h3></div>
     <div class="tscroll"><table>
-      <thead><tr><th>商品編號</th><th>商品名稱</th><th>分類</th>
-        <th style="color:var(--ordered)">已訂貨</th>
-        <th style="color:var(--pending)">待整理</th>
-        <th style="color:var(--instock)">庫存</th>
-        <th style="color:var(--ng)">NG數</th>
-        <th style="color:#6B7280">報廢</th>
-        <th>安全庫存</th><th>總進貨</th><th>總出貨</th><th>狀態</th><th>操作</th></tr></thead>
+      <thead><tr id="i-thead-row">
+        <th class="sortable" data-k="id" data-lbl="商品編號" onclick="sortInv('id')">商品編號</th>
+        <th class="sortable" data-k="name" data-lbl="商品名稱" onclick="sortInv('name')">商品名稱</th>
+        <th class="sortable" data-k="category" data-lbl="分類" onclick="sortInv('category')">分類</th>
+        <th class="sortable" style="color:var(--ordered)" data-k="ordered" data-lbl="已訂貨" onclick="sortInv('ordered')">已訂貨</th>
+        <th class="sortable" style="color:var(--pending)" data-k="pending" data-lbl="待整理" onclick="sortInv('pending')">待整理</th>
+        <th class="sortable" style="color:var(--instock)" data-k="inStock" data-lbl="庫存" onclick="sortInv('inStock')">庫存</th>
+        <th class="sortable" style="color:var(--ng)" data-k="ng" data-lbl="NG數" onclick="sortInv('ng')">NG數</th>
+        <th class="sortable" style="color:#6B7280" data-k="scrapped" data-lbl="報廢" onclick="sortInv('scrapped')">報廢</th>
+        <th class="sortable" data-k="safetyStock" data-lbl="安全庫存" onclick="sortInv('safetyStock')">安全庫存</th>
+        <th class="sortable" data-k="totalIn" data-lbl="總進貨" onclick="sortInv('totalIn')">總進貨</th>
+        <th class="sortable" data-k="totalOut" data-lbl="總出貨" onclick="sortInv('totalOut')">總出貨</th>
+        <th>狀態</th><th>操作</th></tr></thead>
       <tbody id="i-tbody"></tbody>
     </table></div>
   </div>
@@ -473,7 +481,7 @@ tr:hover td{background:#F4F8FD}
     <div class="card-hdr"><h3 id="p-count">商品</h3>
       <button class="btn btn-s btn-sm" onclick="saveAllCosts()">💾 儲存成本/售價</button></div>
     <div class="tscroll"><table>
-      <thead><tr><th style="width:32px"><input type="checkbox" id="p-check-all" onchange="toggleAllProds(this)" style="cursor:pointer"></th><th>商品編號</th><th>商品名稱</th><th>分類</th><th>安全庫存</th><th>成本 (TWD)</th><th>預設售價</th><th>毛利率</th><th>操作</th></tr></thead>
+      <thead><tr id="p-thead-row"><th style="width:32px"><input type="checkbox" id="p-check-all" onchange="toggleAllProds(this)" style="cursor:pointer"></th><th class="sortable" data-k="id" data-lbl="商品編號" onclick="sortProd('id')">商品編號</th><th class="sortable" data-k="name" data-lbl="商品名稱" onclick="sortProd('name')">商品名稱</th><th class="sortable" data-k="category" data-lbl="分類" onclick="sortProd('category')">分類</th><th class="sortable" data-k="safetyStock" data-lbl="安全庫存" onclick="sortProd('safetyStock')">安全庫存</th><th class="sortable" data-k="unitCost" data-lbl="成本 (TWD)" onclick="sortProd('unitCost')">成本 (TWD)</th><th class="sortable" data-k="defaultPrice" data-lbl="預設售價" onclick="sortProd('defaultPrice')">預設售價</th><th class="sortable" data-k="margin" data-lbl="毛利率" onclick="sortProd('margin')">毛利率</th><th>操作</th></tr></thead>
       <tbody id="p-tbody"></tbody>
     </table></div>
   </div>
@@ -1660,6 +1668,20 @@ function delRestock(id){
 // ═══════════════════════════════════════════════
 // INVENTORY
 // ═══════════════════════════════════════════════
+// ── 表格欄位點擊排序 ──
+let _invSort={key:null,dir:1}, _prodSort={key:null,dir:1};
+function _applySort(arr, st, acc){
+  if(!st.key||!acc[st.key]) return arr;
+  const f=acc[st.key];
+  return arr.slice().sort((a,b)=>{ let va=f(a), vb=f(b);
+    if(typeof va==='string'||typeof vb==='string'){ va=(va==null?'':va).toString().toLowerCase(); vb=(vb==null?'':vb).toString().toLowerCase(); return va<vb?-st.dir:va>vb?st.dir:0; }
+    return (((va||0)-(vb||0)))*st.dir; });
+}
+function _paintSort(rowId, st){ document.querySelectorAll('#'+rowId+' th[data-k]').forEach(th=>{ const k=th.dataset.k; th.innerHTML=th.dataset.lbl+(st.key===k?`<span style="color:var(--acc)"> ${st.dir>0?'▲':'▼'}</span>`:''); }); }
+function sortInv(k){ _invSort.dir=_invSort.key===k?-_invSort.dir:1; _invSort.key=k; renderInv(); }
+function sortProd(k){ _prodSort.dir=_prodSort.key===k?-_prodSort.dir:1; _prodSort.key=k; renderProducts(); }
+const _INV_ACC={id:x=>x.id,name:x=>x.name,category:x=>x.category,ordered:x=>x.ordered,pending:x=>x.pending,inStock:x=>x.inStock,ng:x=>x.ng,scrapped:x=>x.scrapped,safetyStock:x=>x.safetyStock,totalIn:x=>x.totalIn,totalOut:x=>x.totalOut};
+function _prodAcc(){ const c=gCosts(); return {id:p=>p.id,name:p=>p.name,category:p=>p.category,safetyStock:p=>p.safetyStock,unitCost:p=>(c[p.id]?.unitCost||0),defaultPrice:p=>(c[p.id]?.defaultPrice||0),margin:p=>{const x=c[p.id]||{};const dp=x.defaultPrice||0;return dp>0?(dp-(x.unitCost||0))/dp:-1;}}; }
 function renderInv(){
   const prods=gP(); const inv=gI();
   let items=prods.map(p=>{const i=inv.find(x=>x.productId===p.id)||{ordered:0,pending:0,inStock:0,ng:0,scrapped:0,safetyStock:p.safetyStock||5,totalIn:0,totalOut:0};return{...p,ordered:i.ordered||0,pending:i.pending||0,inStock:i.inStock||0,ng:i.ng||0,scrapped:i.scrapped||0,safetyStock:i.safetyStock||p.safetyStock||5,totalIn:i.totalIn||0,totalOut:i.totalOut||0};});
@@ -1677,6 +1699,8 @@ function renderInv(){
   else if(st==='has-ordered')items=items.filter(x=>x.ordered>0);
   else if(st==='has-ng')items=items.filter(x=>x.ng>0);
   items.sort((a,b)=>{const s=x=>x.inStock<=0?0:(x.safetyStock>0&&x.inStock<x.safetyStock)?1:2;return s(a)-s(b);});
+  if(_invSort.key) items=_applySort(items,_invSort,_INV_ACC);
+  _paintSort('i-thead-row',_invSort);
   document.getElementById('i-count').textContent=`共 ${items.length} 項商品`;
   document.getElementById('i-tbody').innerHTML=items.length>0?items.map(it=>`<tr style="${it.discontinued?'opacity:.6':''}">
     <td style="font-size:11px;color:var(--gray)">${it.id}</td>
@@ -1747,6 +1771,8 @@ function renderProducts(){
   const cat=document.getElementById('f-pcat')?.value||'';
   if(s)prods=prods.filter(p=>(p.name||'').toLowerCase().includes(s)||(p.id||'').toLowerCase().includes(s));
   if(cat)prods=prods.filter(p=>p.category===cat);
+  if(_prodSort.key) prods=_applySort(prods,_prodSort,_prodAcc());
+  _paintSort('p-thead-row',_prodSort);
   document.getElementById('p-count').textContent=`共 ${prods.length} 項商品`;
   const costs=gCosts();
   const CI='width:80px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;text-align:center';
