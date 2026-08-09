@@ -467,9 +467,7 @@ tr:hover td{background:#F4F8FD}
   <!-- Product table -->
   <div class="fbar">
     <div class="fg"><label>搜尋</label><input class="si" id="f-psearch" placeholder="名稱或編號…" oninput="renderProducts()"></div>
-    <div class="fg"><label>分類</label><select id="f-pcat" onchange="renderProducts()">
-      <option value="">全部</option><option>太陽眼鏡</option><option>光學框</option><option>帽子</option><option>帆布袋</option><option>包裝盒</option><option>包材</option><option>配件</option>
-    </select></div>
+    <div class="fg"><label>分類</label><input class="si" id="f-pcat" list="f-pcat-list" placeholder="輸入或選擇分類…" oninput="renderProducts()"><datalist id="f-pcat-list"></datalist></div>
     <button class="btn btn-s btn-sm" onclick="clrF('p')">清除</button>
   </div>
   <div id="p-bulk-bar" style="display:none;background:#FEF3C7;border:1.5px solid #FDE68A;border-radius:8px;padding:8px 14px;margin-bottom:10px;align-items:center;gap:10px">
@@ -1768,9 +1766,11 @@ function renderStats(){
 function renderProducts(){
   let prods=gP();
   const s=document.getElementById('f-psearch')?.value.toLowerCase()||'';
-  const cat=document.getElementById('f-pcat')?.value||'';
+  const cat=(document.getElementById('f-pcat')?.value||'').toLowerCase();
+  const dl=document.getElementById('f-pcat-list');
+  if(dl){const cats=[...new Set(gP().map(p=>p.category).filter(Boolean))].sort();dl.innerHTML=cats.map(c=>`<option value="${c}">`).join('');}
   if(s)prods=prods.filter(p=>(p.name||'').toLowerCase().includes(s)||(p.id||'').toLowerCase().includes(s));
-  if(cat)prods=prods.filter(p=>p.category===cat);
+  if(cat)prods=prods.filter(p=>(p.category||'').toLowerCase().includes(cat));
   if(_prodSort.key) prods=_applySort(prods,_prodSort,_prodAcc());
   _paintSort('p-thead-row',_prodSort);
   document.getElementById('p-count').textContent=`共 ${prods.length} 項商品`;
