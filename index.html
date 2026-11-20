@@ -924,7 +924,7 @@ async function loadAll(){
   MEM['_snap_products']=MEM['iis2_p'].map(x=>x.id);
   MEM['iis2_i']=(i.data||[]).map(r=>({productId:r.product_id,ordered:r.ordered,pending:r.pending,inStock:r.in_stock,ng:r.ng,scrapped:r.scrapped,safetyStock:r.safety_stock,totalIn:r.total_in,totalOut:r.total_out}));
   const itemsBy={}; (oi.data||[]).forEach(it=>{(itemsBy[it.order_id]=itemsBy[it.order_id]||[]).push({productId:it.product_id,productName:it.product_name,qty:it.qty,unitPrice:it.unit_price,discount:it.discount,subtotal:it.subtotal});});
-  MEM['iis2_o']=(o.data||[]).map(r=>{const its=itemsBy[r.id]||[];const f=its[0]||{};return {id:r.id,date:r.date,orderId:r.order_id,platform:r.platform,qty:r.qty,subtotal:r.subtotal,commissionRate:r.commission_rate,commissionAmt:r.commission_amt,serviceFee:r.service_fee,shippingFee:r.shipping_fee,netRevenue:r.net_revenue,shippingMethod:r.shipping_method,notes:r.notes,packaging:r.packaging||[],source:r.source,lineUserId:r.line_user_id,status:r.status||'shipped',items:its,productId:f.productId,productName:f.productName,unitPrice:f.unitPrice,discount:f.discount};});
+  MEM['iis2_o']=(o.data||[]).map(r=>{const its=itemsBy[r.id]||[];const f=its[0]||{};return {id:r.id,date:r.date,orderId:r.order_id,platform:r.platform,qty:r.qty,subtotal:r.subtotal,commissionRate:r.commission_rate,commissionAmt:r.commission_amt,serviceFee:r.service_fee,shippingFee:r.shipping_fee,netRevenue:r.net_revenue,shippingMethod:r.shipping_method,notes:r.notes,packaging:r.packaging||[],source:r.source,lineUserId:r.line_user_id,trackingNo:r.tracking_no,shippedAt:r.shipped_at,buyer:r.buyer,status:r.status||'shipped',items:its,productId:f.productId,productName:f.productName,unitPrice:f.unitPrice,discount:f.discount};});
   MEM['_snap_orders']=MEM['iis2_o'].map(x=>x.id);
   MEM['iis2_r']=(r.data||[]).map(x=>({id:x.id,date:x.date,productId:x.product_id,productName:x.product_name,qty:x.qty,status:x.status,unitCost:x.unit_cost||0,total:x.total||0,notes:x.notes})); MEM['_snap_restocks']=MEM['iis2_r'].map(x=>x.id);
   MEM['iis2_rt']=(rt.data||[]).map(x=>({id:x.id,date:x.date,platform:x.platform,orderId:x.order_id||null,productId:x.product_id,productName:x.product_name,qty:x.qty,condition:x.condition,refundAmount:x.refund_amount,reason:x.reason,notes:x.notes,packaging:x.packaging||[],items:x.items||[]})); MEM['_snap_returns']=MEM['iis2_rt'].map(x=>x.id);
@@ -1384,7 +1384,7 @@ function renderOrders(){
       return`<tr data-oid="${o.id}"${rs>1?' style="border-top:'+(isFirst?'2px':'1px')+' solid var(--border)"':''}>
         ${isFirst?`
         <td rowspan="${rs}" style="font-size:11px;color:var(--gray);vertical-align:middle">${orders.length-i}</td>
-        <td rowspan="${rs}" style="vertical-align:middle">${fd(o.date)}${o.orderId?`<br><span style="font-size:11px;color:var(--gray)">${o.orderId}</span>`:''}</td>
+        <td rowspan="${rs}" style="vertical-align:middle">${fd(o.date)}${o.orderId?`<br><span style="font-size:11px;color:var(--gray)">${o.orderId}</span>`:''}${o.trackingNo?`<br><span style="font-size:11px;color:#16a34a" title="出貨單號">🚚 ${o.trackingNo}</span>`:''}</td>
         <td rowspan="${rs}" style="vertical-align:middle">
           <select class="il-f" data-field="platform" style="${IF};max-width:120px">${pOpts}</select>
         </td>`:''}
